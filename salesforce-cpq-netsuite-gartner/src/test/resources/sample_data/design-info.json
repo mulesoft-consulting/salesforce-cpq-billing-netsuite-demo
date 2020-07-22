@@ -1,0 +1,26 @@
+{
+  "sampleData": {
+    "e61e54db-3256-491c-a51b-4f8ea5091e11": {
+      "payload": "sample_data/unknown.dwl",
+      "vars-counter": "sample_data/defaultnumbertype.dwl"
+    },
+    "1f41a78c-1824-4f1b-8420-01c2f14a9953": {
+      "payload": "sample_data/record.dwl"
+    },
+    "99107ddd-7b25-46a6-8bce-7dd35f101958": {
+      "payload": "sample_data/Record_1.dwl"
+    },
+    "7c500989-c197-42f9-b51d-e15a722be54a": {
+      "vars-responsePayload": "sample_data/list_unknown.dwl"
+    },
+    "fd11d36b-709b-4aa5-a1db-9577e33c6ca7": {
+      "payload": "sample_data/json.json"
+    },
+    "f3efb2bb-6516-41e5-b19c-fb82b966cbb4": {
+      "payload": "sample_data/object.dwl"
+    },
+    "696a55a4-8e37-459e-a7fc-5e71349ce6c9": {
+      "payload": "sample_data/unknown_1.dwl"
+    }
+  }
+}

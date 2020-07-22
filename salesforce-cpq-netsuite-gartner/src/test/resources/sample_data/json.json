@@ -1,0 +1,29 @@
+{"data":
+  { "quoteId":"a0l5w000008MjYY",
+    "lines":
+      [
+      	{
+      	"attributes": 
+      	{
+      		"type":"SBQQ__QuoteLine__c",
+      		"url":"/services/data/v48.0/sobjects/SBQQ__QuoteLine__c/a0h5w00000tPSGTAA4"
+      	},
+        "Id":"a0h5w00000tPSGTAA4",
+        "SBQQ__Product__c":"01t5w000008E1qqAAC",
+        "SBQQ__Quantity__c":1.00,
+    	"CurrencyIsoCode":"USD"
+    	},
+    	{
+      	"attributes": 
+      	{
+      		"type":"SBQQ__QuoteLine__c",
+      		"url":"/services/data/v48.0/sobjects/SBQQ__QuoteLine__c/a0h5w00000tPSGTAA4"
+      	},
+        "Id":"a0h5w00000tPSGTAA4",
+        "SBQQ__Product__c":"11t5w000008E1qqCCC",
+        "SBQQ__Quantity__c":2.00,
+    	"CurrencyIsoCode":"USD"
+    	}
+      ]
+  }
+}

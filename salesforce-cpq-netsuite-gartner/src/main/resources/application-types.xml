@@ -1,0 +1,313 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="update" format="json">
+      <types:shape format="weave" example="examples/updaterequest.json"><![CDATA[%dw 2.0
+
+type update = Array<{|  Id: String,   "type": String,   Name: String|}> {"example": "[{\\\"Id\\\":\\\"01t5w000008E1rPAAS\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"19\\\\\\\" Ripper\\\"},{\\\"Id\\\":\\\"01t5w000008E1qqAAC\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"12\\\\\\\" Auger\\\"},{\\\"Id\\\":\\\"01t5w000008E1rUAAS\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"20\\\\\\\" Trenching Bucket\\\"},{\\\"Id\\\":\\\"01t5w000008E1rZAAS\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"24\\\\\\\" Auger\\\"},{\\\"Id\\\":\\\"01t5w000008E1raAAC\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"36\\\\\\\" General Bucket\\\"},{\\\"Id\\\":\\\"01t5w000008E1ryAAC\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"54\\\\\\\" General Bucket\\\"},{\\\"Id\\\":\\\"01t5w000008E1rtAAC\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"42\\\\\\\" General Bucket\\\"},{\\\"Id\\\":\\\"01t5w000008E1reAAC\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"27\\\\\\\" Ripper\\\"},{\\\"Id\\\":\\\"01t5w000008E1rjAAC\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"34\\\\\\\" Ripper\\\"},{\\\"Id\\\":\\\"01t5w000008E1roAAC\\\",\\\"type\\\":\\\"Product2\\\",\\\"Name\\\":\\\"36\\\\\\\" Auger\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="salesorderInitialize" format="json">
+      <types:shape format="weave" example="examples/initialize.json"><![CDATA[%dw 2.0
+
+type salesorderInitialize = {|
+  discountRate: Null, 
+  revenueStatus: Null, 
+  endDate: Null, 
+  salesTeamList: Null, 
+  vatRegNum: Null, 
+  paymentEventType: Null, 
+  memo: Null, 
+  ccSecurityCodeMatch: Null, 
+  validFrom: Null, 
+  syncPartnerTeams: Null, 
+  accountingBookDetailList: Null, 
+  promotionsList: Null, 
+  ccNumber: Null, 
+  saveOnAuthDecline: Boolean, 
+  balance: Number {"typeId": "double"}, 
+  terms: Null, 
+  recurMonthly: Null, 
+  intercoStatus: Null, 
+  fax: Null, 
+  threeDStatusCode: Null, 
+  vsoeAutoCalc: Null, 
+  shipGroupList: Null, 
+  paymentEventHoldReason: Null, 
+  checkNumber: Null, 
+  fxAccount: Null, 
+  handlingMode: Null, 
+  opportunity: Null, 
+  contribPct: Null, 
+  shipDate: String, 
+  subsidiary: {|
+    externalId: Null, 
+    "type": Null, 
+    internalId: String, 
+    name: String
+  |}, 
+  isMultiShipTo: Null, 
+  subsidiaryTaxRegNum: Null, 
+  shipMethod: Null, 
+  tranDate: String, 
+  shipIsResidential: Boolean, 
+  nullFieldList: Null, 
+  startDate: Null, 
+  status: Null, 
+  inputReferenceCode: Null, 
+  creditCardProcessor: Null, 
+  taxDetailsOverride: Null, 
+  nextBill: Null, 
+  partnersList: Null, 
+  discountItem: Null, 
+  taxRegOverride: Null, 
+  giftCertApplied: Null, 
+  billAddressList: Null, 
+  handlingCost: Null, 
+  paymentOption: Null, 
+  currency: Null, 
+  email: Null, 
+  revRecStartDate: Null, 
+  getAuth: Boolean, 
+  toBePrinted: Null, 
+  otherRefNum: Null, 
+  billingSchedule: Null, 
+  customForm: {|
+    externalId: Null, 
+    "type": Null, 
+    internalId: String, 
+    name: String
+  |}, 
+  shippingTax2Rate: Null, 
+  ccApproved: Boolean, 
+  oneTime: Null, 
+  recognizedRevenue: Null, 
+  paymentEventResult: Null, 
+  shipComplete: Null, 
+  altHandlingCost: Null, 
+  paypalProcess: Null, 
+  createdDate: String, 
+  createdFrom: {|
+    externalId: Null, 
+    "type": Null, 
+    internalId: String, 
+    name: String
+  |}, 
+  partner: Null, 
+  paymentCardCsc: Null, 
+  outputReferenceCode: Null, 
+  shippingAddress: Null, 
+  estGrossProfit: Null, 
+  itemList: {|
+    item: Array<{|      catchUpPeriod: Null,       orderPriority: Null,       lineUniqueKey: Number {"typeId": "int"},       chargeType: Null,       quantityCommitted: Number {"typeId": "double"},       tax1Amt: Null,       licenseCode: Null,       isEstimate: Boolean,       price: {|        externalId: Null,         "type": Null,         internalId: String,         name: String      |},       altSalesAmt: Null,       options: Null,       inventoryLocation: Null,       createPo: Null,       poRate: Null,       customFieldList: Null,       giftCertMessage: Null,       fromJob: Boolean,       quantityAvailable: Null,       item: {|        externalId: Null,         "type": Null,         internalId: String,         name: String      |},       inventorySubsidiary: Null,       revRecEndDate: Null,       vsoeDelivered: Null,       vsoeAmount: Null,       costEstimateType: Null,       quantityFulfilled: Number {"typeId": "double"},       inventoryDetail: Null,       taxCode: Null,       giftCertRecipientName: Null,       giftCertNumber: Null,       expandItemGroup: Boolean,       createdPo: Null,       locationAutoAssigned: Null,       vsoeDeferral: Null,       quantityBackOrdered: Null,       vsoePermitDiscount: Null,       vsoeIsEstimate: Null,       vsoeSopGroup: Null,       shipMethod: Null,       job: Null,       taxAmount: Null,       vsoeAllocation: Null,       shipGroup: Null,       poCurrency: Null,       noAutoAssignLocation: Null,       line: Number {"typeId": "int"},       taxDetailsReference: Null,       expectedShipDate: Null,       description: String,       vsoePrice: Null,       units: Null,       subscription: Null,       itemIsFulfilled: Null,       rate: String,       quantityOnHand: Null,       deferRevRec: Boolean,       department: Null,       taxRate2: Null,       taxRate1: Null,       revRecStartDate: Null,       amount: Number {"typeId": "double"},       quantityPicked: Null,       quantity: Number {"typeId": "double"},       giftCertFrom: Null,       giftCertRecipientEmail: Null,       billingSchedule: Null,       serialNumbers: Null,       excludeFromRateRequest: Boolean,       isTaxable: Boolean,       percentComplete: Null,       commitInventory: String,       revRecSchedule: Null,       shipAddress: Null,       revRecTermInMonths: Null,       costEstimate: Null,       isClosed: Null,       createWo: Null,       itemFulfillmentChoice: Null,       grossAmt: Null,       quantityBilled: Null,       location: Null,       quantityPacked: Null,       clazz: Null,       poVendor: Null    |}>, 
+    replaceAll: Boolean
+  |}, 
+  inputAuthCode: Null, 
+  paymentEventDate: Null, 
+  revRecOnRevCommitment: Null, 
+  entity: {|
+    externalId: Null, 
+    "type": Null, 
+    internalId: String, 
+    name: String
+  |}, 
+  estGrossProfitPercent: Null, 
+  salesRep: Null, 
+  debitCardIssueNo: Null, 
+  shopperIpAddress: Null, 
+  salesEffectiveDate: Null, 
+  taxTotal: Number {"typeId": "double"}, 
+  source: Null, 
+  outputAuthCode: Null, 
+  subTotal: Number {"typeId": "double"}, 
+  ccAvsZipMatch: Null, 
+  intercoTransaction: Null, 
+  ccName: Null, 
+  pnRefNum: Null, 
+  paymentEventUpdatedBy: Null, 
+  giftCertRedemptionList: Null, 
+  internalId: Null, 
+  exchangeRate: Null, 
+  toBeFaxed: Null, 
+  handlingTax1Rate: Null, 
+  customFieldList: Null, 
+  shippingCost: Null, 
+  revRecEndDate: Null, 
+  leadSource: Null, 
+  trackingNumbers: Null, 
+  ccSecurityCode: Null, 
+  recurAnnually: Null, 
+  excludeCommission: Boolean, 
+  taxRate: Number {"typeId": "double"}, 
+  shippingTaxCode: Null, 
+  drAccount: Null, 
+  canHaveStackable: Boolean, 
+  toBeEmailed: Null, 
+  shipAddressList: Null, 
+  fob: Null, 
+  paymentMethod: Null, 
+  paypalAuthId: Null, 
+  payPalStatus: Null, 
+  job: Null, 
+  paymentProcessingProfile: Null, 
+  tranId: String, 
+  paymentOperation: Null, 
+  ccExpireDate: Null, 
+  revCommitStatus: Null, 
+  nexus: Null, 
+  recurQuarterly: Null, 
+  taxItem: {|
+    externalId: Null, 
+    "type": Null, 
+    internalId: String, 
+    name: String
+  |}, 
+  salesGroup: Null, 
+  orderStatus: String, 
+  taxPointDate: Null, 
+  isRecurringPayment: Boolean, 
+  total: Number {"typeId": "double"}, 
+  currencyName: Null, 
+  ccStreet: Null, 
+  handlingTaxCode: Null, 
+  actualShipDate: Null, 
+  promoCode: Null, 
+  ignoreAvs: Null, 
+  department: Null, 
+  ccZipCode: Null, 
+  linkedTrackingNumbers: Null, 
+  totalCostEstimate: Null, 
+  dynamicDescriptor: Null, 
+  recurWeekly: Null, 
+  authCode: Null, 
+  tranIsVsoeBundle: Null, 
+  lastModifiedDate: String, 
+  isTaxable: Boolean, 
+  externalId: Null, 
+  messageSel: Null, 
+  message: Null, 
+  revRecSchedule: Null, 
+  handlingTax2Rate: Null, 
+  payPalTranId: Null, 
+  syncSalesTeams: Null, 
+  ccAvsStreetMatch: Null, 
+  altShippingCost: Null, 
+  deferredRevenue: Null, 
+  discountTotal: Number {"typeId": "double"}, 
+  entityTaxRegNum: Null, 
+  location: Null, 
+  altSalesTotal: Null, 
+  tax2Total: Null, 
+  billingAddress: Null, 
+  shippingTax1Rate: Null, 
+  creditCard: Null, 
+  clazz: Null, 
+  taxDetailsList: Null
+|} {"example": "{\\\"discountRate\\\":null,\\\"revenueStatus\\\":null,\\\"endDate\\\":null,\\\"salesTeamList\\\":null,\\\"vatRegNum\\\":null,\\\"paymentEventType\\\":null,\\\"memo\\\":null,\\\"ccSecurityCodeMatch\\\":null,\\\"validFrom\\\":null,\\\"syncPartnerTeams\\\":null,\\\"accountingBookDetailList\\\":null,\\\"promotionsList\\\":null,\\\"ccNumber\\\":null,\\\"saveOnAuthDecline\\\":true,\\\"balance\\\":0.0,\\\"terms\\\":null,\\\"recurMonthly\\\":null,\\\"intercoStatus\\\":null,\\\"fax\\\":null,\\\"threeDStatusCode\\\":null,\\\"vsoeAutoCalc\\\":null,\\\"shipGroupList\\\":null,\\\"paymentEventHoldReason\\\":null,\\\"checkNumber\\\":null,\\\"fxAccount\\\":null,\\\"handlingMode\\\":null,\\\"opportunity\\\":null,\\\"contribPct\\\":null,\\\"shipDate\\\":\\\"2020-06-02T00:00:00\\\",\\\"subsidiary\\\":{\\\"externalId\\\":null,\\\"type\\\":null,\\\"internalId\\\":\\\"1\\\",\\\"name\\\":\\\"Parent Company\\\"},\\\"isMultiShipTo\\\":null,\\\"subsidiaryTaxRegNum\\\":null,\\\"shipMethod\\\":null,\\\"tranDate\\\":\\\"2020-06-02T00:00:00\\\",\\\"shipIsResidential\\\":false,\\\"nullFieldList\\\":null,\\\"startDate\\\":null,\\\"status\\\":null,\\\"inputReferenceCode\\\":null,\\\"creditCardProcessor\\\":null,\\\"taxDetailsOverride\\\":null,\\\"nextBill\\\":null,\\\"partnersList\\\":null,\\\"discountItem\\\":null,\\\"taxRegOverride\\\":null,\\\"giftCertApplied\\\":null,\\\"billAddressList\\\":null,\\\"handlingCost\\\":null,\\\"paymentOption\\\":null,\\\"currency\\\":null,\\\"email\\\":null,\\\"revRecStartDate\\\":null,\\\"getAuth\\\":false,\\\"toBePrinted\\\":null,\\\"otherRefNum\\\":null,\\\"billingSchedule\\\":null,\\\"customForm\\\":{\\\"externalId\\\":null,\\\"type\\\":null,\\\"internalId\\\":\\\"108\\\",\\\"name\\\":\\\"Custom Sales Order 2\\\"},\\\"shippingTax2Rate\\\":null,\\\"ccApproved\\\":false,\\\"oneTime\\\":null,\\\"recognizedRevenue\\\":null,\\\"paymentEventResult\\\":null,\\\"shipComplete\\\":null,\\\"altHandlingCost\\\":null,\\\"paypalProcess\\\":null,\\\"createdDate\\\":\\\"2020-06-02T14:15:00\\\",\\\"createdFrom\\\":{\\\"externalId\\\":null,\\\"type\\\":null,\\\"internalId\\\":\\\"110571\\\",\\\"name\\\":\\\"Quote #1026\\\"},\\\"partner\\\":null,\\\"paymentCardCsc\\\":null,\\\"outputReferenceCode\\\":null,\\\"shippingAddress\\\":null,\\\"estGrossProfit\\\":null,\\\"itemList\\\":{\\\"item\\\":[{\\\"catchUpPeriod\\\":null,\\\"orderPriority\\\":null,\\\"lineUniqueKey\\\":75809,\\\"chargeType\\\":null,\\\"quantityCommitted\\\":0.0,\\\"tax1Amt\\\":null,\\\"licenseCode\\\":null,\\\"isEstimate\\\":false,\\\"price\\\":{\\\"externalId\\\":null,\\\"type\\\":null,\\\"internalId\\\":\\\"1\\\",\\\"name\\\":\\\"Base Price\\\"},\\\"altSalesAmt\\\":null,\\\"options\\\":null,\\\"inventoryLocation\\\":null,\\\"createPo\\\":null,\\\"poRate\\\":null,\\\"customFieldList\\\":null,\\\"giftCertMessage\\\":null,\\\"fromJob\\\":false,\\\"quantityAvailable\\\":null,\\\"item\\\":{\\\"externalId\\\":null,\\\"type\\\":null,\\\"internalId\\\":\\\"9152\\\",\\\"name\\\":\\\"12\\\\\\\" Auger\\\"},\\\"inventorySubsidiary\\\":null,\\\"revRecEndDate\\\":null,\\\"vsoeDelivered\\\":null,\\\"vsoeAmount\\\":null,\\\"costEstimateType\\\":null,\\\"quantityFulfilled\\\":0.0,\\\"inventoryDetail\\\":null,\\\"taxCode\\\":null,\\\"giftCertRecipientName\\\":null,\\\"giftCertNumber\\\":null,\\\"expandItemGroup\\\":false,\\\"createdPo\\\":null,\\\"locationAutoAssigned\\\":null,\\\"vsoeDeferral\\\":null,\\\"quantityBackOrdered\\\":null,\\\"vsoePermitDiscount\\\":null,\\\"vsoeIsEstimate\\\":null,\\\"vsoeSopGroup\\\":null,\\\"shipMethod\\\":null,\\\"job\\\":null,\\\"taxAmount\\\":null,\\\"vsoeAllocation\\\":null,\\\"shipGroup\\\":null,\\\"poCurrency\\\":null,\\\"noAutoAssignLocation\\\":null,\\\"line\\\":1,\\\"taxDetailsReference\\\":null,\\\"expectedShipDate\\\":null,\\\"description\\\":\\\"Designed for digging postholes, footings, shrub and tree plantings easily and efficiently.\\\",\\\"vsoePrice\\\":null,\\\"units\\\":null,\\\"subscription\\\":null,\\\"itemIsFulfilled\\\":null,\\\"rate\\\":\\\"2045.00\\\",\\\"quantityOnHand\\\":null,\\\"deferRevRec\\\":false,\\\"department\\\":null,\\\"taxRate2\\\":null,\\\"taxRate1\\\":null,\\\"revRecStartDate\\\":null,\\\"amount\\\":4090.0,\\\"quantityPicked\\\":null,\\\"quantity\\\":2.0,\\\"giftCertFrom\\\":null,\\\"giftCertRecipientEmail\\\":null,\\\"billingSchedule\\\":null,\\\"serialNumbers\\\":null,\\\"excludeFromRateRequest\\\":false,\\\"isTaxable\\\":false,\\\"percentComplete\\\":null,\\\"commitInventory\\\":\\\"AVAILABLE_QTY\\\",\\\"revRecSchedule\\\":null,\\\"shipAddress\\\":null,\\\"revRecTermInMonths\\\":null,\\\"costEstimate\\\":null,\\\"isClosed\\\":null,\\\"createWo\\\":null,\\\"itemFulfillmentChoice\\\":null,\\\"grossAmt\\\":null,\\\"quantityBilled\\\":null,\\\"location\\\":null,\\\"quantityPacked\\\":null,\\\"clazz\\\":null,\\\"poVendor\\\":null}],\\\"replaceAll\\\":true},\\\"inputAuthCode\\\":null,\\\"paymentEventDate\\\":null,\\\"revRecOnRevCommitment\\\":null,\\\"entity\\\":{\\\"externalId\\\":null,\\\"type\\\":null,\\\"internalId\\\":\\\"668277\\\",\\\"name\\\":\\\"CPQ Demo Customer\\\"},\\\"estGrossProfitPercent\\\":null,\\\"salesRep\\\":null,\\\"debitCardIssueNo\\\":null,\\\"shopperIpAddress\\\":null,\\\"salesEffectiveDate\\\":null,\\\"taxTotal\\\":0.0,\\\"source\\\":null,\\\"outputAuthCode\\\":null,\\\"subTotal\\\":4090.0,\\\"ccAvsZipMatch\\\":null,\\\"intercoTransaction\\\":null,\\\"ccName\\\":null,\\\"pnRefNum\\\":null,\\\"paymentEventUpdatedBy\\\":null,\\\"giftCertRedemptionList\\\":null,\\\"internalId\\\":null,\\\"exchangeRate\\\":null,\\\"toBeFaxed\\\":null,\\\"handlingTax1Rate\\\":null,\\\"customFieldList\\\":null,\\\"shippingCost\\\":null,\\\"revRecEndDate\\\":null,\\\"leadSource\\\":null,\\\"trackingNumbers\\\":null,\\\"ccSecurityCode\\\":null,\\\"recurAnnually\\\":null,\\\"excludeCommission\\\":false,\\\"taxRate\\\":8.25,\\\"shippingTaxCode\\\":null,\\\"drAccount\\\":null,\\\"canHaveStackable\\\":false,\\\"toBeEmailed\\\":null,\\\"shipAddressList\\\":null,\\\"fob\\\":null,\\\"paymentMethod\\\":null,\\\"paypalAuthId\\\":null,\\\"payPalStatus\\\":null,\\\"job\\\":null,\\\"paymentProcessingProfile\\\":null,\\\"tranId\\\":\\\"18031\\\",\\\"paymentOperation\\\":null,\\\"ccExpireDate\\\":null,\\\"revCommitStatus\\\":null,\\\"nexus\\\":null,\\\"recurQuarterly\\\":null,\\\"taxItem\\\":{\\\"externalId\\\":null,\\\"type\\\":null,\\\"internalId\\\":\\\"-112\\\",\\\"name\\\":\\\"CA-SAN MATEO\\\"},\\\"salesGroup\\\":null,\\\"orderStatus\\\":\\\"PENDING_FULFILLMENT\\\",\\\"taxPointDate\\\":null,\\\"isRecurringPayment\\\":false,\\\"total\\\":4090.0,\\\"currencyName\\\":null,\\\"ccStreet\\\":null,\\\"handlingTaxCode\\\":null,\\\"actualShipDate\\\":null,\\\"promoCode\\\":null,\\\"ignoreAvs\\\":null,\\\"department\\\":null,\\\"ccZipCode\\\":null,\\\"linkedTrackingNumbers\\\":null,\\\"totalCostEstimate\\\":null,\\\"dynamicDescriptor\\\":null,\\\"recurWeekly\\\":null,\\\"authCode\\\":null,\\\"tranIsVsoeBundle\\\":null,\\\"lastModifiedDate\\\":\\\"2020-06-02T14:15:00\\\",\\\"isTaxable\\\":true,\\\"externalId\\\":null,\\\"messageSel\\\":null,\\\"message\\\":null,\\\"revRecSchedule\\\":null,\\\"handlingTax2Rate\\\":null,\\\"payPalTranId\\\":null,\\\"syncSalesTeams\\\":null,\\\"ccAvsStreetMatch\\\":null,\\\"altShippingCost\\\":null,\\\"deferredRevenue\\\":null,\\\"discountTotal\\\":0.0,\\\"entityTaxRegNum\\\":null,\\\"location\\\":null,\\\"altSalesTotal\\\":null,\\\"tax2Total\\\":null,\\\"billingAddress\\\":null,\\\"shippingTax1Rate\\\":null,\\\"creditCard\\\":null,\\\"clazz\\\":null,\\\"taxDetailsList\\\":null}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="checkInventory" format="json">
+      <types:shape format="weave" example="examples/checkInventoryRequest.json"><![CDATA[%dw 2.0
+
+type checkInventory = {| ExternalIds: Array<String> |} {"example": "{\\\"ExternalIds\\\":[\\\"9151\\\",\\\"9152\\\",\\\"9153\\\",\\\"9154\\\",\\\"9155\\\"]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="reserveInventoryRequest" format="json">
+      <types:shape format="weave" example="examples/reserveInventoryRequestv2.json"><![CDATA[%dw 2.0
+
+type reserveInventoryRequest = {|
+  data: {|
+    quoteId: String, 
+    lines: Array<{|      attributes: {|        "type": String,         url: String      |},       Id: String,       SBQQ__Product__c: String,       SBQQ__Quantity__c: Number {"typeId": "double"},       CurrencyIsoCode: String    |}>
+  |}
+|} {"example": "{\\\"data\\\":{\\\"quoteId\\\":\\\"a0l5w000008MjYY\\\",\\\"lines\\\":[{\\\"attributes\\\":{\\\"type\\\":\\\"SBQQ__QuoteLine__c\\\",\\\"url\\\":\\\"\\/services\\/data\\/v48.0\\/sobjects\\/SBQQ__QuoteLine__c\\/a0h5w00000tPSGTAA4\\\"},\\\"Id\\\":\\\"a0h5w00000tPSGTAA4\\\",\\\"SBQQ__Product__c\\\":\\\"01t5w000008E1qqAAC\\\",\\\"SBQQ__Quantity__c\\\":1.00,\\\"CurrencyIsoCode\\\":\\\"USD\\\"},{\\\"attributes\\\":{\\\"type\\\":\\\"SBQQ__QuoteLine__c\\\",\\\"url\\\":\\\"\\/services\\/data\\/v48.0\\/sobjects\\/SBQQ__QuoteLine__c\\/a0h5w00000tPSGTAA4\\\"},\\\"Id\\\":\\\"a0h5w00000tPSGTAA4\\\",\\\"SBQQ__Product__c\\\":\\\"11t5w000008E1qqCCC\\\",\\\"SBQQ__Quantity__c\\\":2.00,\\\"CurrencyIsoCode\\\":\\\"USD\\\"}]}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="price" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="orderDetails" format="json">
+      <types:shape format="weave" example="examples/sfdcOrderDetails.json"><![CDATA[%dw 2.0
+
+type orderDetails = {|
+  data: {|
+    attributes: {|
+      "type": String, 
+      url: String
+    |}, 
+    Id: String, 
+    SBQQ__Quote__c: String, 
+    CurrencyIsoCode: String
+  |}
+|} {"example": "{\\\"data\\\":{\\\"attributes\\\":{\\\"type\\\":\\\"Order\\\",\\\"url\\\":\\\"\\/services\\/data\\/v48.0\\/sobjects\\/Order\\/8015w000000GrphAAC\\\"},\\\"Id\\\":\\\"8015w000000GrphAAC\\\",\\\"SBQQ__Quote__c\\\":\\\"a0l5w000008MjYYAA0\\\",\\\"CurrencyIsoCode\\\":\\\"USD\\\"}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="updateStatus" format="json">
+      <types:shape format="weave" example="examples/updateStatus.json"><![CDATA[%dw 2.0
+
+type updateStatus = {| OrderId: String |} {"example": "{\\\"OrderId\\\":\\\"8015w000000GrphAAC\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#2104740f-a92e-4e02-91e7-922ada25de65">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="update[]"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#99107ddd-7b25-46a6-8bce-7dd35f101958">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="salesorderInitialize"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#e61e54db-3256-491c-a51b-4f8ea5091e11">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="checkInventory"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#fd11d36b-709b-4aa5-a1db-9577e33c6ca7">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="reserveInventoryRequest"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#696a55a4-8e37-459e-a7fc-5e71349ce6c9">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="orderDetails"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#017abd7d-0bbe-4f8b-9f41-5d737f8f6820">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="updateStatus"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

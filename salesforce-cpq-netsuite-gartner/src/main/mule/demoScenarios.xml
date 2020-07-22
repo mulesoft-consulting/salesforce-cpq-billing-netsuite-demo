@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:netsuite="http://www.mulesoft.org/schema/mule/netsuite" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+
+
+
+	<flow name="scenario1" doc:id="84014b05-e720-442a-8e06-113dee7e1498" initialState="started">
+		<netsuite:new-object-trigger objectType="ITEM_BASIC" doc:name="On New Object" doc:id="1d34fabe-48b5-4b17-b765-d9484fc0807f" config-ref="NetSuite_Config">
+			<scheduling-strategy >
+				<fixed-frequency frequency="8500" />
+			</scheduling-strategy>
+		</netsuite:new-object-trigger>
+		<choice doc:name="Choice" doc:id="122030a2-184f-4ae3-be64-bc8a83f80e7c" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<logger level="INFO" doc:name="Logger" doc:id="df7bdb51-ba6a-4e76-92fd-cff171fbb9a2" message="#[payload]"/>
+				<set-variable value="#[payload.internalId[0]]" doc:name="itemId" doc:id="7118f083-3eda-416d-9796-7731cb6b907f" variableName="itemId" />
+				<ee:transform doc:name="Item Basic Data" doc:id="f10bd771-a3d9-4b28-8ded-79a88e55b601">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Name: payload[0].itemId,
+	Family: payload[0].customFieldList.customField[0].StringCustomFieldRef__custitemcpq_prodfam,
+	Product_Picture_ID_URL__c: payload[0].customFieldList.customField[0].StringCustomFieldRef__custitemcpq_prodphotourl,
+	Description: payload[0].salesDescription,
+	ProductCode: payload[0].displayName,
+	ExternalId: payload[0].internalId,
+	IsActive: true
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="08e65b9b-c1f4-4062-8d57-bcf72219c7f9" message="New Netsuite Object Found"/>
+				<scatter-gather doc:name="Scatter-Gather" doc:id="e49742e1-76bf-47c6-a177-c3124279fbea" >
+					<route >
+						<salesforce:create doc:name="Create Product" doc:id="3398d57e-8f3a-48ca-82be-281111a5fdf2" type="Product2" config-ref="Salesforce_Config" />
+						<set-variable value="#[payload.items[0].id]" doc:name="externalId" doc:id="f8de639e-4e56-4a82-99de-c1917b2a9e7d" variableName="externalId" />
+					</route>
+					<route >
+						<until-successful maxRetries="10" doc:name="Until Successful" doc:id="6c658747-fb81-420d-a0fe-d7064b42681f" millisBetweenRetries="1000">
+							<netsuite:get-record doc:name="Get record" doc:id="4750bde5-4e8e-4fc6-a30c-617832cc2fcf" config-ref="NetSuite_Config" recordType="INVENTORY_ITEM" internalId="#[vars.itemId]" />
+							<set-variable value="#[payload.pricingMatrix.pricing[0].priceList.price[0].value as String]" doc:name="unitPrice" doc:id="2f27eaa9-6925-499b-b7af-214a00800a5b" variableName="unitPrice"/>
+						</until-successful>
+					</route>
+				</scatter-gather>
+				<ee:transform doc:name="Transform Message" doc:id="72dd431b-8527-4fde-8a4d-d00fac0c14aa">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload."0".payload.items map ( item , indexOfItem ) -> {
+	Product2Id: item.id as String,
+	Pricebook2Id: "01s5w000006WilG",
+	UnitPrice: vars.unitPrice,
+	CurrencyIsoCode: "USD",
+	IsActive: true,
+	UseStandardPrice: false
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="41f367ae-2f24-4f82-8432-de66c42ca3ee" message="#[payload]" />
+				<salesforce:create doc:name="createPricebookEntry" doc:id="ea115808-a3b2-4cde-b8a1-949a9ced025f" config-ref="Salesforce_Config" type="PricebookEntry"/>
+				<logger level="INFO" doc:name="Logger" doc:id="7969c3a4-7cd6-40fc-a8b5-8ab1f71f04e2" message="#[payload]"/>
+				<ee:transform doc:name="Transform Message" doc:id="dcf9ae5a-8874-4b53-8b52-3ec10e97a10a">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	internalId: vars.itemId as String,
+	externalId: vars.externalId as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<netsuite:update-record doc:name="Update record" doc:id="fef5b80f-5bd5-422c-95a8-2ba34575819f" recordType="INVENTORY_ITEM" config-ref="NetSuite_Config"/>
+				<logger level="INFO" doc:name="Logger" doc:id="f27638d8-683a-4869-a0ac-b59a2bef7d81" message="#[payload]" />
+			</when>
+			<otherwise >
+				<logger level="DEBUG" doc:name="Logger" doc:id="3c3d189a-fcd0-4c89-97ac-2e350bcb70fa" message="No New Object Found"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="scenario2" doc:id="264e9233-4b5e-4794-b4cd-637ab6a57d07">
+		<http:listener doc:name="Listener" doc:id="ae4efe52-5155-4d2c-8022-0054cc3c7ce4" path="/checkInventory" allowedMethods="POST" config-ref="HTTP_Listener_config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ded41b49-943b-4218-813b-55e75fce49cd" message="#[payload]"/>
+		<set-variable doc:name="Set Variable" doc:id="0eedd336-5918-4fc0-9bbb-0db94b865901" variableName="responsePayload" value="#[[]]"/>
+		<ee:transform doc:name="Transform Message" doc:id="e61e54db-3256-491c-a51b-4f8ea5091e11">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload.ExternalIds map(payload01, index) ->
+		{
+			internalId: payload01
+		}
+]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		<foreach doc:name="For Each" doc:id="c163b2e6-6f14-4839-8430-03e9548db996" collection="#[payload]">
+			<ee:transform doc:name="Transform Message" doc:id="872a5a5f-939d-47bb-a003-a6b61ba7d1b8" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	internalId: payload.internalId
+}
+]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<until-successful maxRetries="5" doc:name="Until Successful" doc:id="a4098150-2710-4d02-8337-e7f149d6dde1" millisBetweenRetries="1000">
+				<netsuite:get-item-availability doc:name="Get item availability" doc:id="bce0039b-fe73-4297-a94f-3706d85c8a0c" config-ref="NetSuite_Config">
+		</netsuite:get-item-availability>
+				<set-variable value="#[vars.responsePayload ++ payload]" doc:name="responsePayload" doc:id="db8acdd9-6a72-4a3e-bfd5-6e657f5c29f4" variableName="responsePayload" />
+			</until-successful>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="7c500989-c197-42f9-b51d-e15a722be54a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+	ExternalIds: vars.responsePayload map(payload01, index_of_payload01) ->
+{
+	Id: payload01.item.internalId,
+	ERP_Qty: payload01.quantityAvailable
+}
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="scenario3" doc:id="a03c7771-42a3-4925-bc0d-99ad8e1f7dfe" >
+		<http:listener doc:name="Listener" doc:id="fcd92c60-80ec-418a-b5ea-0213511a9f2a" path="/reserveInventory" config-ref="HTTP_Listener_config"/>
+		<logger level="INFO" doc:name="scenario3Request" doc:id="b5f84bc5-54d6-4b26-ae94-eacf4668c310" message="#[payload]" />
+		<set-variable value="#[payload]" doc:name="originalPayload" doc:id="1c47931b-2ad1-4d51-83fb-549e329b8206" variableName="originalPayload" />
+		<ee:transform doc:name="createQuoteMessage" doc:id="fd11d36b-709b-4aa5-a1db-9577e33c6ca7">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	externalId: payload.data.quoteId[0 to 14],
+	itemList: {
+		item: payload.data.lines map ( line , indexOfLine ) -> {
+			item: {
+				externalId: line.SBQQ__Product__c
+			},
+			quantity: line.SBQQ__Quantity__c
+		}
+	},
+	entity: {
+    	"internalId": "668277",
+    	"name": "CPQ Demo Customer"
+			 },
+	 entityStatus: {
+	 	internalId: "11",
+	 	name: "In Negotiation"
+	 }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="cpqPayload" doc:id="713cbb89-6396-4839-94e0-82288d0ce108" variableName="cpqPayload"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="7d991063-791d-479d-8a9a-b8a087c8551a" millisBetweenRetries="1000">
+			<netsuite:add-record doc:name="createQuote" doc:id="a9d23ad1-8894-4f12-b338-5bd7c7e58568" recordType="ESTIMATE" config-ref="NetSuite_Config" />
+		</until-successful>
+		<set-variable value="#[payload]" doc:name="quoteResponse" doc:id="364234bf-d7c1-44f4-a4ee-8264524c2b0d" variableName="quoteResponse" />
+		<ee:transform doc:name="createQuoteJSON" doc:id="86e0f00f-1fa9-4681-a22b-730e897162c7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="createQuoteResponse" doc:id="ac16180f-dfbc-43cd-a04d-70008913a407" message='#[payload]'/>
+		<choice doc:name="Choice" doc:id="76f466cd-441b-4419-bc27-34e1ddf0d876" >
+			<when expression='#[payload.status.statusDetail[0].code == "DUP_RCRD"]'>
+				<until-successful maxRetries="5" doc:name="Until Successful" doc:id="8a4dc03a-fd9b-4268-936a-27efe018ade6" millisBetweenRetries="1000">
+					<ee:transform doc:name="updateTempSO" doc:id="0cde4f7c-a33e-497d-8009-c79cf14b7cb2">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	externalId: vars.cpqPayload.externalId ++ "-tempSO",
+	itemList: {
+		item: vars.cpqPayload.itemList.item map ( item , indexOfItem ) -> {
+			item: {
+				externalId: item.item.externalId
+			},
+			quantity: item.quantity
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<netsuite:update-record recordType="SALES_ORDER" doc:name="updateTempSalesOrder" doc:id="bb9f6580-5b83-40de-9462-a03e8847743b" config-ref="NetSuite_Config" />
+					<set-variable value="#[payload.baseRef.internalId]" doc:name="tempSoId" doc:id="4f77a90f-8818-4bdd-b501-af6c795cf3f0" variableName="tempSoId" />
+					<ee:transform doc:name="updateSalesOrderJSON" doc:id="d44acfbc-3c1a-45c2-b08d-f5cb1e716343">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="updateTempSalesOrderLog" doc:id="849d5ab6-5f24-4d22-8d7c-3c5c4043a58f" message='#[payload]'/>
+				</until-successful>
+				<until-successful maxRetries="5" doc:name="Until Successful" doc:id="ee5e3e5f-7f58-4e3c-9a78-6f8028c6f31b" millisBetweenRetries="1000">
+					<ee:transform doc:name="createQuoteUpdate" doc:id="c8fc6f1b-e5ce-4271-8dc9-b3bad0898618">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	externalId: vars.originalPayload.data.quoteId[0 to 14],
+	itemList: {
+		item: vars.originalPayload.data.lines map ( line , indexOfLine ) -> {
+			item: {
+				externalId: line.SBQQ__Product__c
+			},
+			quantity: line.SBQQ__Quantity__c
+		}
+	}
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<netsuite:update-record recordType="ESTIMATE" doc:name="updateQuote" doc:id="5ef77e24-b806-429f-90a1-cbd903fd2746" config-ref="NetSuite_Config" />
+					<ee:transform doc:name="updateQuoteJSON" doc:id="8d25e7f0-d168-49c8-bbde-06c69f2070ed" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="updateQuoteLog" doc:id="2af4389a-71b2-430b-b253-baa4880a6caa" message='#[payload]'/>
+				</until-successful>
+			</when>
+			<otherwise >
+				<until-successful maxRetries="5" doc:name="Until Successful" doc:id="040841dc-e5ad-4ab4-8337-630f2825a732" millisBetweenRetries="1000">
+					<ee:transform doc:name="createTempSalesOrderMessage" doc:id="1361cedf-6277-4611-8a72-ffdd597a90d8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	entity: {
+		internalId: "668278",
+	},
+	externalId: vars.cpqPayload.externalId ++ "-tempSO",
+	itemList: {
+		item: vars.cpqPayload.itemList.item map ( item , indexOfItem ) -> {
+			item: {
+				externalId: item.item.externalId
+			},
+			quantity: item.quantity
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+					<netsuite:add-record doc:name="createTempSalesOrder" doc:id="dff69708-6d33-426d-af61-652fd483c1de" recordType="SALES_ORDER" config-ref="NetSuite_Config" />
+					<set-variable value="#[payload.baseRef.internalId]" doc:name="tempSoId" doc:id="3df31dd3-0c03-4f9f-9f24-762f5c004e4a" variableName="tempSoId" />
+					<ee:transform doc:name="createSOJSON" doc:id="ef240666-f5c0-4d02-b912-8169a6a27808" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="createSalesOrderLog" doc:id="b5a2703f-ef35-47f6-8c13-5328af1b9069" message='#[payload]'/>
+				</until-successful>
+			</otherwise>
+		</choice>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="537fe8bf-af1e-4ef4-9e4a-6ddc2847e134" millisBetweenRetries="1000">
+			<netsuite:get-record doc:name="getSalesOrder" doc:id="4b7ad34c-7c9f-4206-9827-72c9f358c89c" config-ref="NetSuite_Config" recordType="SALES_ORDER" internalId="#[vars.tempSoId]" />
+		</until-successful>
+		<ee:transform doc:name="sendQuoteResponse" doc:id="f3efb2bb-6516-41e5-b19c-fb82b966cbb4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{	quoteId: vars.cpqPayload.externalId,
+	lines: 
+		payload.itemList.item map (payload01, index) ->
+		{   Quote_Line_ExternalId:	payload01.item.internalId,
+			ERP_CommittedQuantity: payload01.quantityCommitted
+		},
+	ERP_Status: "COMMITTED"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="sendQuoteResponseLog" doc:id="984b3a4a-e81c-4052-b797-27e69513766a" message="#[payload]"/>
+	</flow>
+	<flow name="scenario4" doc:id="dec0cb62-4b88-478e-8393-dfd177eaf827" >
+		<http:listener doc:name="/createOrder" doc:id="39fbf037-966a-4c08-bcd6-8c7618bf0771" config-ref="HTTP_Listener_config" path="/createOrder" />
+		<logger level="INFO" doc:name="createOrderRequest" doc:id="336340bd-a3c5-4aef-82a4-62d509b01a01" message="#[payload]" />
+		<ee:transform doc:name="Map request to Delete temporary SO" doc:id="696a55a4-8e37-459e-a7fc-5e71349ce6c9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	externalId: payload.data.SBQQ__Quote__c[0 to 14] ++ "-tempSO",
+	"type": "SALES_ORDER"
+} as Object {
+	class : "org.mule.module.netsuite.extension.api.RecordRef"
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="quoteId" ><![CDATA[payload.data.SBQQ__Quote__c[0 to 14]]]></ee:set-variable>
+				<ee:set-variable variableName="cpqId" ><![CDATA[payload.data.Id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="deleteTemporarySORequest" doc:id="0846cd91-6060-415a-aea7-f439017c6410" message="#[payload]" />
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="2acd019e-9e74-45a6-a722-e7390c82d78c" millisBetweenRetries="1000">
+			<netsuite:delete-record doc:name="Delete temporary SO" doc:id="c3f2c0ce-d157-413c-8b75-fc8ab6525da8" config-ref="NetSuite_Config" />
+		</until-successful>
+		<ee:transform doc:name="deleteTempSOJSON" doc:id="501af8d1-72b8-4a0d-a287-5fdfecc9132f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="deleteTemporarySOResponse" doc:id="163c6150-ff2f-462f-973e-45d0082800bc" message="#[payload]"/>
+		<set-variable value="#[true]" doc:name="Success boolean for delete" doc:id="be0206ff-6914-48b1-8dbb-050ee01f1b28" variableName="ifSuccess" />
+		<choice doc:name="If delete = success" doc:id="8b15d40a-815d-4a15-872a-8cdc1de41727" >
+			<when expression="#[vars.ifSuccess]" >
+				<until-successful maxRetries="5" doc:name="Until Successful" doc:id="e283c419-7615-4e0c-b72c-5409ab55db68" millisBetweenRetries="1000">
+					<logger level="INFO" doc:name="Log success message" doc:id="7215a507-20bf-4996-9744-b9070fed994c" message="#[vars.ifSuccess]" />
+					<ee:transform doc:name="Format adding new SO" doc:id="ca067108-107a-4a91-b7b1-67bb274428e5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"createdFrom": {
+		"externalId": vars.quoteId,
+		"type": null
+	},
+	"entity": {
+		"externalId": null,
+		"type": null,
+		"internalId": "668277",
+		"name": "CPQ Demo Customer"
+	},
+	externalId: vars.cpqId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<netsuite:add-record recordType="SALES_ORDER" doc:name="Add new SO" doc:id="ad397b3d-ad35-4518-a07f-218b94cfd822" config-ref="NetSuite_Config" />
+					<ee:transform doc:name="addNewSOResponse" doc:id="90a8c85c-82f3-42d7-871b-0c7f9560a616" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="addNewSOResponse" doc:id="25e9bc91-e489-4156-8b2d-f0c799cfa7e4" message="#[payload]"/>
+					<ee:transform doc:name="Format response back to CPQ" doc:id="cb0fba67-b17c-43cb-b2ad-2f1dea877c8d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"OrderId":vars.cpqId,
+	"status":"PENDING_FULFILLMENT"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<logger level="INFO" doc:name="createOrderResponse" doc:id="2c5306f2-bff4-43af-86f9-c41fc0179718" message="#[payload]"/>
+				</until-successful>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log failure message" doc:id="be1ecbf7-e916-4523-a63e-4753bd2f2470" message="Delete has failed" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="scenario5" doc:id="f4cb1791-70a0-42dd-9f7e-ca6e5d91d754" >
+		<http:listener doc:name="/updateStatus" doc:id="6f55c193-d21c-42df-9287-af23088bc353" config-ref="HTTP_Listener_config" path="/updateStatus" />
+		<logger level="INFO" doc:name="updateStatusRequest" doc:id="4e1e3f3c-c92b-4aae-9169-5e4694ef2b86" message="#[payload]" />
+		<ee:transform doc:name="Format request to get SO" doc:id="017abd7d-0bbe-4f8b-9f41-5d737f8f6820" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="externalId" ><![CDATA[payload.OrderId]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<netsuite:get-record recordType="SALES_ORDER" doc:name="Get SO" doc:id="5bb2258c-5190-4f49-b0f3-394235b10290" config-ref="NetSuite_Config" externalId="#[vars.externalId]" />
+		<ee:transform doc:name="getSoResponse" doc:id="8db02d78-0756-432a-ae11-f56b8e783cd3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="getSOResponse" doc:id="9be42cbb-c69f-46be-92e6-9930bb6541a3" message="#[payload]" />
+		<ee:transform doc:name="Format response back to CPQ" doc:id="49ffd1b4-a66e-4deb-b1ea-4d4e1220b55b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	OrderId: payload.externalId,
+	status: payload.orderStatus
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

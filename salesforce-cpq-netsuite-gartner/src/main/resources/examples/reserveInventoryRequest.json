@@ -1,0 +1,6 @@
+{"quoteId": "abc",
+ "lines": 
+    [{"ExternalID": "abc", "QuantityToCommit": 123},
+    {"ExternalID": "123", "QuantityToCommit": 233}
+    ]
+}

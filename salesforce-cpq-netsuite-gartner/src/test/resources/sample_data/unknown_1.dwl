@@ -1,0 +1,1 @@
+{"data":{"attributes":{"type":"Order","url":"/services/data/v48.0/sobjects/Order/8015w000000GzCjAAK"},"Id":"8015w000000GzCjAAK","SBQQ__Quote__c":"a0l5w000008NDS6AAO","CurrencyIsoCode":"USD"}}

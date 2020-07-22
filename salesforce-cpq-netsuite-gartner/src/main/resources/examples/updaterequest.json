@@ -1,0 +1,52 @@
+[
+  {
+    "Id": "01t5w000008E1rPAAS",
+    "type": "Product2",
+    "Name": "19\" Ripper"
+  },
+  {
+    "Id": "01t5w000008E1qqAAC",
+    "type": "Product2",
+    "Name": "12\" Auger"
+  },
+  {
+    "Id": "01t5w000008E1rUAAS",
+    "type": "Product2",
+    "Name": "20\" Trenching Bucket"
+  },
+  {
+    "Id": "01t5w000008E1rZAAS",
+    "type": "Product2",
+    "Name": "24\" Auger"
+  },
+  {
+    "Id": "01t5w000008E1raAAC",
+    "type": "Product2",
+    "Name": "36\" General Bucket"
+  },
+  {
+    "Id": "01t5w000008E1ryAAC",
+    "type": "Product2",
+    "Name": "54\" General Bucket"
+  },
+  {
+    "Id": "01t5w000008E1rtAAC",
+    "type": "Product2",
+    "Name": "42\" General Bucket"
+  },
+  {
+    "Id": "01t5w000008E1reAAC",
+    "type": "Product2",
+    "Name": "27\" Ripper"
+  },
+  {
+    "Id": "01t5w000008E1rjAAC",
+    "type": "Product2",
+    "Name": "34\" Ripper"
+  },
+  {
+    "Id": "01t5w000008E1roAAC",
+    "type": "Product2",
+    "Name": "36\" Auger"
+  }
+]
