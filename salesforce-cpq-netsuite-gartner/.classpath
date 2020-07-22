@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="MULE_LIB/com.mulesoft.modules/mule-secure-configuration-property-module/1.2.3"/>
 	<classpathentry kind="con" path="MULE_LIB/com.mulesoft.connectors/mule-netsuite-connector/9.2.6"/>
 	<classpathentry kind="con" path="MULE_LIB/com.mulesoft.connectors/mule-salesforce-connector/10.1.0"/>
 	<classpathentry kind="con" path="MULE_LIB/org.mule.connectors/mule-sockets-connector/1.1.6"/>

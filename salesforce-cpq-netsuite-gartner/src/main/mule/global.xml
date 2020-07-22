@@ -1,21 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:netsuite="http://www.mulesoft.org/schema/mule/netsuite" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:netsuite="http://www.mulesoft.org/schema/mule/netsuite" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9aa37127-b0cf-421c-8e8d-ace71b1c22c7" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
-	<configuration-properties doc:name="Configuration properties" doc:id="a9676791-d7be-461f-8d15-040317955151" file="config.yaml" />
+	<configuration-properties doc:name="Configuration properties" doc:id="a9676791-d7be-461f-8d15-040317955151" file="config/config.yaml" />
 	<netsuite:config name="NetSuite_Config" doc:name="NetSuite Config" doc:id="233ba874-1049-4c4b-be76-040531511f0b" >
-		<netsuite:login-authentication-connection email="${ns.user}" password="${ns.pass}" account="${ns.account}" roleId="${ns.roleId}" applicationId="${ns.applicationId}" />
+		<netsuite:login-authentication-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}" />
 	</netsuite:config>
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="795978a8-a891-4b79-899f-8eddfafd1bc3" >
-		<salesforce:basic-connection username="${cpq.user}" password="${cpq.pass}" />
+		<salesforce:basic-connection username="${secure::cpq.user}" password="${secure::cpq.pass}" />
 	</salesforce:sfdc-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="372310e5-d5db-4778-9973-0bec9cf765ad" file="config/config-secure.yaml" key="${encryption.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="0726c101-458a-4355-8b5b-4352ccadd16f" name="encryption.key" value="mulesoft_password" />
 </mule>

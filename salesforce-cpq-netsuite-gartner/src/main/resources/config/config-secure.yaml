@@ -1,0 +1,14 @@
+# Secure Properties File
+#
+# NetSuite properties:
+ns:
+  user: "![lxWjplAmlchvNUfsF8ckkhb89pt0Xi8QO1tn14oTJEp+qg/FC+NbBw==]"
+  pass: "![SO1TkXFpCbB0sSdu1RC+8cAWACEyP66T]"
+  account: "![uc7rDe+qWXL9WTWI7s7UZQ==]"
+  roleId: "![tyjtYvZSIAA=]"
+  applicationId: "![CW+ImiiD4lZgYjOsXABkBeWbkAKdouiH4q+/u6+kN4+1uH3qRMt9bA==]"
+  
+# Salesforce properties:
+cpq:
+  user: "![Yyo5CVTp8ZsdVSplgqSbTSpUDlK/poOedQRVJ0SKC5o=]"
+  pass: "![WyPe9gJoiax2BPjmR2b6wjxfLmvT8OfV]"
