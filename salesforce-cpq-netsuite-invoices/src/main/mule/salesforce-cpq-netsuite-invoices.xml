@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:netsuite="http://www.mulesoft.org/schema/mule/netsuite" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="97927be9-5f6d-4e78-8492-f7213f4dcc53" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<netsuite:config name="NetSuite_Config" doc:name="NetSuite Config" doc:id="cb165bb9-da1c-45a9-b387-a56103936479" >
+		<netsuite:request-based-authentication-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}" />
+	</netsuite:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="86797d0d-5603-4000-8c6f-597d3a58f07c" file="config/config.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="9a62addf-b0b2-4a0d-b0b6-436f6391b898" file="config/config-secure.yaml" key="${encryption.key}">
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="252baba0-daf5-4780-8e92-01fcb584c706" name="encryption.key" value="mulesoft_password" />
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="95730e7e-f332-4449-b54b-1fc8c1543e72" >
+		<salesforce:basic-connection username="${secure::cpq.user}" password="${secure::cpq.pass}"/>
+	</salesforce:sfdc-config>
+	<flow name="salesforce-cpq-netsuite-invoicesFlow" doc:id="02dfde2b-cf47-40f8-97f1-932121c69d8c" >
+		<http:listener doc:name="/syncInvoices" doc:id="99aab16d-25a5-41cc-9993-33f120602dc5" config-ref="HTTP_Listener_config" path="/syncInvoices"/>
+		<ee:transform doc:name="Initialize Variables" doc:id="5edb6dd2-8249-4b4c-94f5-4470151c3a6d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="invoice_num" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.queryParams."invoice_num"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query doc:name="Query Invoice" doc:id="d543e691-9e60-45da-9a94-eb428b54f9a9" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[select Name from blng__Invoice__c where Id = ':invoice_num']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	invoice_num : vars.invoice_num
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform to JSON" doc:id="5485828a-f523-4448-9591-36f9429b5e7d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="989643a5-ac38-4142-9cf6-95fdcf1837a4" message="#[payload]"/>
+	</flow>
+	<flow name="salesforce-cpq-netsuite-invoicesFlow1" doc:id="ccebb8ae-0b62-4644-8ced-545069fe6556" >
+		<http:listener doc:name="/invoices" doc:id="aaeb7d2c-0196-40d1-a4da-758db44f5bce" config-ref="HTTP_Listener_config" path="/invoices"/>
+		<ee:transform doc:name="Initialize Variables" doc:id="91ff4bb4-52c6-4502-b6b0-b55d8d9d6f4e">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="internal_id" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.queryParams."internal_id"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<netsuite:get-record recordType="INVOICE" doc:name="Get Invoice Record" doc:id="58ee3364-7e17-45fa-af2c-bc5bbd46427e" config-ref="NetSuite_Config" internalId="#[vars.internal_id]"/>
+		<ee:transform doc:name="Transform to JSON" doc:id="44ae4f45-7980-4448-87b4-8c4037e8b275" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="95db7f04-bc28-4bdb-9c82-c95569565b2d" message="#[payload]" />
+	</flow>
+	<flow name="salesforce-cpq-netsuite-invoicesFlow2" doc:id="095da51e-a097-4c9e-b381-45137d9be91a" >
+		<http:listener doc:name="/invoiceCreate" doc:id="04d1ce40-0e9c-4182-91fe-63b6d6147d2d" config-ref="HTTP_Listener_config" path="/invoiceCreate" />
+		<netsuite:add-record recordType="INVOICE" doc:name="Add Invoice Record" doc:id="44d548cb-0134-4adb-a508-25cc5da28ad0" config-ref="NetSuite_Config"/>
+	</flow>
+</mule>
