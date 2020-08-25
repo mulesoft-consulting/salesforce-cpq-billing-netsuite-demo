@@ -1,0 +1,15 @@
+# Secure Properties File
+#
+# NetSuite properties:
+ns:
+  user: "![lxWjplAmlchvNUfsF8ckkhb89pt0Xi8QO1tn14oTJEp+qg/FC+NbBw==]"
+  pass: "![SO1TkXFpCbB0sSdu1RC+8cAWACEyP66T]"
+  account: "![uc7rDe+qWXL9WTWI7s7UZQ==]"
+  roleId: "![tyjtYvZSIAA=]"
+  applicationId: "![CW+ImiiD4lZgYjOsXABkBeWbkAKdouiH4q+/u6+kN4+1uH3qRMt9bA==]"
+  
+# Salesforce properties:
+sfdc:
+  user: "![d5HIVDGMXBKa0wP9bR1YZdqW0+Fc2YuCFUj6ElHVKwM=]"
+  password: "![oyZUKMW5wRP1bnQs771vys5KSABMcFgq]"
+  token: "![kKbxa4y10ztIBjJGtLfvDLCi9dBo6swBpcYIAnEQsvI=]"

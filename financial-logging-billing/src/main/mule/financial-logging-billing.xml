@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:netsuite="http://www.mulesoft.org/schema/mule/netsuite"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9603a090-63b6-4c24-9e11-d1b306b7b508" >
+		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" securityToken="${secure::sfdc.token}" url="https://test.salesforce.com/services/Soap/u/49.0"/>
+	</salesforce:sfdc-config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="70813923-f48d-453e-ac25-7014e060af25" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<netsuite:config name="NetSuite_Config" doc:name="NetSuite Config" doc:id="744438c6-8a08-4f7c-8e4e-d1d3c05e3380" >
+		<netsuite:request-based-authentication-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}" />
+	</netsuite:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="89260b15-1446-4a5a-96da-cf65b6d08083" file="config/config.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e1672828-170d-4583-99a9-ba984fde9623" file="config/config-secure.yaml" key="${encryption.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="906ab8c7-3aaf-4995-bf60-72b9404625b4" name="encryption.key" value="mulesoft_password" />
+	<flow name="financial-logging-billingFlow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
+		<http:listener doc:name="Listener" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTran"/>
+		<ee:transform doc:name="Transform Message" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="fin_tran_id_to_sync" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.queryParams."fin_tran_id"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query doc:name="Get Financial Transaction Data" doc:id="e765faad-c7ec-419d-aa51-f86581ec3d37" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT AccountId,AdjustmentAmount,BaseCurrencyAmount,BaseCurrencyBalance,BaseCurrencyFxDate,BaseCurrencyFxRate,BaseCurrencyIsoCode,ChargeAmount,CreatedById,CreatedDate,DestinationEntityId,DueDate,EffectiveDate,EventAction,EventType,FinanceTransactionNumber,Id,ImpactAmount,IsDeleted,LastModifiedById,LastModifiedDate,LegalEntityId,ReferenceEntityId,ReferenceEntityType,ResultingBalance,SourceEntityId,Subtotal,SystemModstamp,TaxAmount,TotalAmountWithTax,TransactionDate FROM FinanceTransaction where Id = ':fin_tran_id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	fin_tran_id : vars.fin_tran_id_to_sync
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="c41b800e-2971-4c7d-92f5-45f5719ccbc9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<netsuite:add-record doc:name="Add Invoice Record" doc:id="2dcd866c-b2bb-4811-a03a-51fa5abf9c44" config-ref="NetSuite_Config" recordType="INVOICE"/>
+		<ee:transform doc:name="Transform Message" doc:id="69c58149-212a-4f28-9634-855f971613ee" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
