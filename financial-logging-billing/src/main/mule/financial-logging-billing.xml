@@ -23,8 +23,8 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	</secure-properties:config>
 	<global-property doc:name="Global Property" doc:id="906ab8c7-3aaf-4995-bf60-72b9404625b4" name="encryption.key" value="mulesoft_password" />
 	<flow name="financial-logging-billingFlow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
-		<http:listener doc:name="Listener" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTran"/>
-		<ee:transform doc:name="Transform Message" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
+		<http:listener doc:name="/syncFinTran" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTran"/>
+		<ee:transform doc:name="Get query-param fin_tran_id" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
 			<ee:message >
 			</ee:message>
 			<ee:variables >
@@ -42,12 +42,41 @@ attributes.queryParams."fin_tran_id"]]></ee:set-variable>
 	fin_tran_id : vars.fin_tran_id_to_sync
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<ee:transform doc:name="Transform Message" doc:id="c41b800e-2971-4c7d-92f5-45f5719ccbc9" >
+		<flow-ref doc:name="Lookup NetSuite Customer ID from Salesforce Account ID" doc:id="558f4475-4718-42ac-ab9e-b4be5c8b6b2c" name="lookup-customer-id-from-netsuite"/>
+		<flow-ref doc:name="Lookup Inventory_Items in NetSuite for each Salesforce Order Item" doc:id="dd99f2fd-62cd-4836-a36b-148124171de8" name="lookup-inventory-items-in-netsuite-for-salesforce-order"/>
+		<ee:transform doc:name="Prep payload for NetSuite" doc:id="e27ae7ba-ff49-4eee-a636-c283b1240566" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
+output application/json
+
 ---
 {
+	customForm: {
+		"internalId": "92",
+		"name": "Standard Product Invoice"
+	},
+	entity: {
+		internalId: "668277",
+		"name": "CPQ Demo Customer"
+	},
+	itemList: {
+		item: [{
+			item: {
+          "internalId": "9154",
+          "name": "24\" Auger"
+        },
+			price: {
+          "internalId": "1",
+          "name": "Base Price"
+        },
+			quantity: 2
+		}]
+	},
+	postingPeriod: {
+		"internalId": "235",
+		"name": "Aug 2020"
+	},
+	tranDate: "2020-08-20T00:00:00"
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
@@ -61,4 +90,10 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
+		<logger level="INFO" doc:name="Log Activity" doc:id="b4023ab3-ce76-4327-b9dd-48fb61105e95" message='#["looking up customer id from NetSuite"]'/>
+	</sub-flow>
+	<sub-flow name="lookup-inventory-items-in-netsuite-for-salesforce-order" doc:id="eb749575-1be4-49c4-ba9f-daa0a9332a6e" >
+		<logger level="INFO" doc:name="Log Activity" doc:id="8e0018b9-f99f-4c9a-a6a7-cfafa0fc9dfd" message='#["looking up inventory items from NetSuite"]' />
+	</sub-flow>
 </mule>

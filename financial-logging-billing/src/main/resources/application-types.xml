@@ -1,5 +1,39 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
-  <types:catalog/>
+  <types:catalog>
+    <types:type name="invoice-object" format="json">
+      <types:shape format="weave" example="examples/NetSuite_Invoice_Request_Example.json"><![CDATA[%dw 2.0
+
+type invoice_object = {|
+  customForm: {|
+    internalId: String, 
+    name: String
+  |}, 
+  entity: {|
+    internalId: String, 
+    name: String
+  |}, 
+  itemList: {|
+    item: Array<{|      item: {|        internalId: String,         name: String      |},       price: {|        internalId: String,         name: String      |},       quantity: Number {"typeId": "int"}    |}>
+  |}, 
+  postingPeriod: {|
+    internalId: String, 
+    name: String
+  |}, 
+  tranDate: String
+|} {"example": "{\\\"customForm\\\":{\\\"internalId\\\":\\\"92\\\",\\\"name\\\":\\\"Standard Product Invoice\\\"},\\\"entity\\\":{\\\"internalId\\\":\\\"668277\\\",\\\"name\\\":\\\"CPQ Demo Customer\\\"},\\\"itemList\\\":{\\\"item\\\":[{\\\"item\\\":{\\\"internalId\\\":\\\"9154\\\",\\\"name\\\":\\\"24\\\\\\\" Auger\\\"},\\\"price\\\":{\\\"internalId\\\":\\\"1\\\",\\\"name\\\":\\\"Base Price\\\"},\\\"quantity\\\":2}]},\\\"postingPeriod\\\":{\\\"internalId\\\":\\\"235\\\",\\\"name\\\":\\\"Aug 2020\\\"},\\\"tranDate\\\":\\\"2020-08-20T00:00:00\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
   <types:enrichment select="#4b6e38d6-56a1-4011-aa25-f7d581adea5c"/>
+  <types:enrichment select="#e27ae7ba-ff49-4eee-a636-c283b1240566">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="invoice-object"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
 </types:mule>
