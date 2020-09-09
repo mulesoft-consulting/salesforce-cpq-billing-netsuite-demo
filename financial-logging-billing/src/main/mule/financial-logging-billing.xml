@@ -43,6 +43,7 @@ attributes.queryParams."fin_tran_id"]]></ee:set-variable>
 }]]]></salesforce:parameters>
 		</salesforce:query>
 		<flow-ref doc:name="Lookup NetSuite Customer ID from Salesforce Account ID" doc:id="558f4475-4718-42ac-ab9e-b4be5c8b6b2c" name="lookup-customer-id-from-netsuite"/>
+		<set-variable value="#[payload]" doc:name="NetSuite Customer" doc:id="88bb45f3-5820-424f-928c-1cbb7b7fbf22" variableName="netSuiteCustomer"/>
 		<flow-ref doc:name="Lookup Inventory_Items in NetSuite for each Salesforce Order Item" doc:id="dd99f2fd-62cd-4836-a36b-148124171de8" name="lookup-inventory-items-in-netsuite-for-salesforce-order"/>
 		<ee:transform doc:name="Prep payload for NetSuite" doc:id="e27ae7ba-ff49-4eee-a636-c283b1240566" >
 			<ee:message >
@@ -56,8 +57,8 @@ output application/json
 		"name": "Standard Product Invoice"
 	},
 	entity: {
-		internalId: "668277",
-		"name": "CPQ Demo Customer"
+		internalId: vars.netSuiteCustomer[0].internalId,
+		"name": vars.netSuiteCustomer[0].companyName
 	},
 	itemList: {
 		item: [{
@@ -91,7 +92,33 @@ payload]]></ee:set-payload>
 		</ee:transform>
 	</flow>
 	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
-		<logger level="INFO" doc:name="Log Activity" doc:id="b4023ab3-ce76-4327-b9dd-48fb61105e95" message='#["looking up customer id from NetSuite"]'/>
+		<salesforce:query doc:name="Query" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Name from Account WHERE Id = ':account_id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	account_id : payload[0].AccountId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="c323ec0e-7883-4e2f-a62a-27e8d9f9f360" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	companyName: {
+		operator: "CONTAINS",
+		searchValue: "Acme"
+	}
+} as Object {
+	class : "com.mulesoft.connector.netsuite.extension.api.CustomerSearchBasic"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<netsuite:search key="CUSTOMER" doc:name="Search" doc:id="566eb88c-9131-4903-a024-bc13ccc3c11f" config-ref="NetSuite_Config" pageSize="10">
+		</netsuite:search>
+		<logger level="INFO" doc:name="Logger" doc:id="1fa3d39d-7946-4b23-ad4b-9f990829f5d5" />
 	</sub-flow>
 	<sub-flow name="lookup-inventory-items-in-netsuite-for-salesforce-order" doc:id="eb749575-1be4-49c4-ba9f-daa0a9332a6e" >
 		<logger level="INFO" doc:name="Log Activity" doc:id="8e0018b9-f99f-4c9a-a6a7-cfafa0fc9dfd" message='#["looking up inventory items from NetSuite"]' />
