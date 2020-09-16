@@ -32,9 +32,13 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 output application/java
 ---
 attributes.queryParams."fin_tran_id"]]></ee:set-variable>
+				<ee:set-variable variableName="orderLineItemsList" ><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<salesforce:query doc:name="Get Financial Transaction Data" doc:id="e765faad-c7ec-419d-aa51-f86581ec3d37" config-ref="Salesforce_Config">
+		<salesforce:query doc:name="Get Financial Transaction Data" doc:id="e765faad-c7ec-419d-aa51-f86581ec3d37" config-ref="Salesforce_Config" target="finTranPayload">
 			<salesforce:salesforce-query ><![CDATA[SELECT AccountId,AdjustmentAmount,BaseCurrencyAmount,BaseCurrencyBalance,BaseCurrencyFxDate,BaseCurrencyFxRate,BaseCurrencyIsoCode,ChargeAmount,CreatedById,CreatedDate,DestinationEntityId,DueDate,EffectiveDate,EventAction,EventType,FinanceTransactionNumber,Id,ImpactAmount,IsDeleted,LastModifiedById,LastModifiedDate,LegalEntityId,ReferenceEntityId,ReferenceEntityType,ResultingBalance,SourceEntityId,Subtotal,SystemModstamp,TaxAmount,TotalAmountWithTax,TransactionDate FROM FinanceTransaction where Id = ':fin_tran_id']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
@@ -43,7 +47,6 @@ attributes.queryParams."fin_tran_id"]]></ee:set-variable>
 }]]]></salesforce:parameters>
 		</salesforce:query>
 		<flow-ref doc:name="Lookup NetSuite Customer ID from Salesforce Account ID" doc:id="558f4475-4718-42ac-ab9e-b4be5c8b6b2c" name="lookup-customer-id-from-netsuite"/>
-		<set-variable value="#[payload]" doc:name="NetSuite Customer" doc:id="88bb45f3-5820-424f-928c-1cbb7b7fbf22" variableName="netSuiteCustomer"/>
 		<flow-ref doc:name="Lookup Inventory_Items in NetSuite for each Salesforce Order Item" doc:id="dd99f2fd-62cd-4836-a36b-148124171de8" name="lookup-inventory-items-in-netsuite-for-salesforce-order"/>
 		<ee:transform doc:name="Prep payload for NetSuite" doc:id="e27ae7ba-ff49-4eee-a636-c283b1240566" >
 			<ee:message >
@@ -92,15 +95,15 @@ payload]]></ee:set-payload>
 		</ee:transform>
 	</flow>
 	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
-		<salesforce:query doc:name="Query" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
+		<salesforce:query doc:name="Query Account Name in Salesforce" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT Name from Account WHERE Id = ':account_id']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
-	account_id : payload[0].AccountId
+	account_id : vars.finTranPayload[0].AccountId
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<ee:transform doc:name="Transform Message" doc:id="c323ec0e-7883-4e2f-a62a-27e8d9f9f360" >
+		<ee:transform doc:name="Prep search payload" doc:id="c323ec0e-7883-4e2f-a62a-27e8d9f9f360" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
@@ -108,7 +111,7 @@ output application/java
 {
 	companyName: {
 		operator: "CONTAINS",
-		searchValue: "Acme"
+		searchValue: payload[0].Name
 	}
 } as Object {
 	class : "com.mulesoft.connector.netsuite.extension.api.CustomerSearchBasic"
@@ -116,11 +119,78 @@ output application/java
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<netsuite:search key="CUSTOMER" doc:name="Search" doc:id="566eb88c-9131-4903-a024-bc13ccc3c11f" config-ref="NetSuite_Config" pageSize="10">
+		<netsuite:search key="CUSTOMER" doc:name="Search for Customer details in NetSuite" doc:id="566eb88c-9131-4903-a024-bc13ccc3c11f" config-ref="NetSuite_Config" pageSize="10" target="netSuiteCustomer">
 		</netsuite:search>
-		<logger level="INFO" doc:name="Logger" doc:id="1fa3d39d-7946-4b23-ad4b-9f990829f5d5" />
 	</sub-flow>
 	<sub-flow name="lookup-inventory-items-in-netsuite-for-salesforce-order" doc:id="eb749575-1be4-49c4-ba9f-daa0a9332a6e" >
+		<salesforce:query doc:name="Query Invoice Detais in Salesforce" doc:id="5c77d419-d22d-4930-b6b6-6b6d6552822b" config-ref="Salesforce_Config" target="invoiceDetailsPayload">
+			<salesforce:salesforce-query ><![CDATA[SELECT blng__Account__c,blng__Action__c,blng__ARStatus__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__BaseCurrencyFXDate__c,blng__BaseCurrencyFXRate__c,blng__BaseCurrency__c,blng__BillToContact__c,blng__CorrectiveAction__c,blng__Credits__c,blng__DaysOutstanding__c,blng__DebitPayments__c,blng__Debits__c,blng__DeclinedPaymentRunCount__c,blng__DefaultPaymentType__c,blng__DueDate__c,blng__ImpactAmount__c,blng__InvoiceDate__c,blng__InvoicePostedDate__c,blng__InvoiceRunCreatedBy__c,blng__InvoiceStatus__c,blng__LastPaymentRunId__c,blng__LastPaymentRunProcessingMessage__c,blng__NegativeLineConversion__c,blng__Notes__c,blng__NumberOfInvoiceLines__c,blng__Order__c,blng__PaymentBatch__c,blng__PaymentMethod__c,blng__PaymentProcessStatus__c,blng__PaymentRunId__c,blng__PaymentRunProcessingMessage__c,blng__PaymentsAgainstInvoiceLines__c,blng__PaymentsAgainstInvoice__c,blng__PaymentStatus__c,blng__Payments__c,blng__RefundsAgainstInvoiceLines__c,blng__RefundsAgainstInvoice__c,blng__StatusFlag__c,blng__Subtotal__c,blng__TargetDate__c,blng__TaxAmount__c,blng__TaxErrorMessage__c,blng__TaxErrors__c,blng__TaxStatus__c,blng__TotalAmount__c,blng__UniqueId__c,CreatedById,CreatedDate,Id,IsDeleted,LastActivityDate,LastModifiedById,LastModifiedDate,LastReferencedDate,LastViewedDate,Name,SystemModstamp FROM blng__Invoice__c where Id = ':invoice_id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	invoice_id : vars.finTranPayload[0].ReferenceEntityId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<salesforce:query doc:name="Query Order Items in Salesforce" doc:id="eb25074c-9b58-4064-a257-077e7b2c492c" config-ref="Salesforce_Config" target="orderItemsPayload">
+			<salesforce:salesforce-query ><![CDATA[SELECT AvailableQuantity,blng__AllocatedRevenueAmount__c,blng__Asset__c,blng__BillableUnitPrice__c,blng__BilledAmountwithouttax__c,blng__BilledTax__c,blng__BillingAccount__c,blng__BillingGLRule__c,blng__BillingGLTreatment__c,blng__BillingRule__c,blng__BillingTreatment__c,blng__BillThroughDateOverride__c,blng__CanceledBillings__c,blng__FinanceBookAccounting__c,blng__GroupId__c,blng__GroupQuantity__c,blng__GroupUnitPrice__c,blng__HoldBilling__c,blng__IncludedUsage__c,blng__InvoiceGroupId__c,blng__InvoiceGrouping__c,blng__InvoiceRunProcessingStatus__c,blng__InvoiceRunStartDate__c,blng__InvoiceRunStatusIndex__c,blng__InvoiceRun__c,blng__LastChargeToDate__c,blng__LastInvoiceTargetDate__c,blng__LegalEntityReference__c,blng__LegalEntity__c,blng__NextBillingDate__c,blng__NextChargeDate__c,blng__OverrideBillableUnitPrice__c,blng__OverrideInitialRevenueEndDate__c,blng__OverrideInitialRevenueStartDate__c,blng__OverrideNextBillingDate__c,blng__PendingBillings__c,blng__RevenueExpectedAmount__c,blng__RevenueLiabilityAmount__c,blng__RevenueMostLikelyAmount__c,blng__RevenueRecognitionRule__c,blng__RevenueScheduleStatus__c,blng__TaxCity__c,blng__TaxCountry__c,blng__TaxCounty__c,blng__TaxErrorMessage__c,blng__TaxGLRule__c,blng__TaxGLTreatment__c,blng__TaxPercentageApplied__c,blng__TaxRule__c,blng__TaxState__c,blng__TaxStatus__c,blng__TaxStreet2__c,blng__TaxStreet__c,blng__TaxTreatment__c,blng__TaxZipCode__c,blng__TerminatedBillings__c,blng__TotalBilling__c,blng__UniqueId__c,blng__UsageFloorQuantity__c,CreatedById,CreatedDate,Description,EndDate,Id,IsDeleted,LastModifiedById,LastModifiedDate,ListPrice,OrderId,OrderItemNumber,OriginalOrderItemId,PricebookEntryId,Product2Id,Quantity,SBQQ__Activated__c,SBQQ__Asset__c,SBQQ__BillingFrequency__c,SBQQ__BillingType__c,SBQQ__BlockPrice__c,SBQQ__BookingsIndicator__c,SBQQ__BundleRoot__c,SBQQ__ChargeType__c,SBQQ__ContractAction__c,SBQQ__Contracted__c,SBQQ__ContractingMethod__c,SBQQ__Contract__c,SBQQ__DefaultSubscriptionTerm__c,SBQQ__DimensionType__c,SBQQ__DiscountSchedule__c,SBQQ__OrderedQuantity__c,SBQQ__OrderProductBookings__c,SBQQ__PriceDimension__c,SBQQ__PriceSchedule__c,SBQQ__PricingMethod__c,SBQQ__ProductSubscriptionType__c,SBQQ__ProrateMultiplier__c,SBQQ__QuotedListPrice__c,SBQQ__QuotedQuantity__c,SBQQ__QuoteLine__c,SBQQ__RequiredBy__c,SBQQ__RevisedOrderProduct__c,SBQQ__SegmentIndex__c,SBQQ__SegmentKey__c,SBQQ__ShippingAccount__c,SBQQ__Status__c,SBQQ__SubscriptionPricing__c,SBQQ__SubscriptionTerm__c,SBQQ__SubscriptionType__c,SBQQ__Subscription__c,SBQQ__TaxAmount__c,SBQQ__TaxCode__c,SBQQ__TermDiscountSchedule__c,SBQQ__TerminatedDate__c,SBQQ__UnproratedNetPrice__c,SBQQ__UpgradedSubscription__c,ServiceDate,SystemModstamp,TotalPrice,UnitPrice FROM OrderItem where OrderId = ':order_id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	order_id : vars.invoiceDetailsPayload[0].blng__Order__c
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<foreach doc:name="For Each Order Line Item" doc:id="4c06f23b-6c16-4435-b89f-319b01b49521" collection="#[vars.orderItemsPayload]" rootMessageVariableName="orderItem">
+			<salesforce:query doc:name="Lookup Order Item Product Name &amp; Price" doc:id="b5c0b7f8-00bc-43c1-a8dc-997a400511f8" config-ref="Salesforce_Config" target="productPayload">
+				<salesforce:salesforce-query ><![CDATA[SELECT Name,UnitPrice FROM PricebookEntry where Id=':priceBookEntry_id']]></salesforce:salesforce-query>
+				<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	priceBookEntry_id : payload.PricebookEntryId
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			<ee:transform doc:name="Prep search payload" doc:id="1b4ff33d-ba68-4b9a-a7ac-68b7b613b0e3">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	item: {
+		operator: "ANY_OF",
+		searchValue: [{
+			name: (vars.productPayload[0].Name default ""),
+			"type": "INVENTORY_ITEM"
+		}]
+	}
+} as Object {
+	class : "com.mulesoft.connector.netsuite.extension.api.InventoryNumberSearchBasic"
+}
+]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<netsuite:search doc:name="Search for Inventory Item in NetSuite" doc:id="a7ac653a-da00-4fbf-94c1-38baee34257a" config-ref="NetSuite_Config" key="INVENTORY_NUMBER_BASIC" pageSize="10" target="netsuiteInventoryItem"/>
+			<ee:transform doc:name="Add Item to Invoice Line Item List" doc:id="e4be89b5-b356-4a7a-af88-d0d2085989e5" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="orderLineItemsList" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	item: [{
+		item: {
+          "internalId": "9154",
+          "name": "24\" Auger"
+        },
+			price: {
+          "internalId": "1",
+          "name": "Base Price"
+        },
+			quantity: 2
+		}]
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
 		<logger level="INFO" doc:name="Log Activity" doc:id="8e0018b9-f99f-4c9a-a6a7-cfafa0fc9dfd" message='#["looking up inventory items from NetSuite"]' />
 	</sub-flow>
 </mule>

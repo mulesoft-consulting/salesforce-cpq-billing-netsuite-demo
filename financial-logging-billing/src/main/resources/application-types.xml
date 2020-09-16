@@ -36,4 +36,5 @@ type invoice_object = {|
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#e4be89b5-b356-4a7a-af88-d0d2085989e5"/>
 </types:mule>

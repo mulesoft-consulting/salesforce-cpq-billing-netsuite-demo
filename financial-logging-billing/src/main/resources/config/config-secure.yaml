@@ -8,7 +8,13 @@ ns:
   roleId: "![tyjtYvZSIAA=]"
   applicationId: "![CW+ImiiD4lZgYjOsXABkBeWbkAKdouiH4q+/u6+kN4+1uH3qRMt9bA==]"
   
-# Salesforce properties:
+# Salesforce properties - GA version sandbox:
+#sfdc:
+#  user: "![d5HIVDGMXBKa0wP9bR1YZdqW0+Fc2YuCFUj6ElHVKwM=]"
+#  password: "![oyZUKMW5wRP1bnQs771vys5KSABMcFgq]"
+#  token: "![kKbxa4y10ztIBjJGtLfvDLCi9dBo6swBpcYIAnEQsvI=]"
+  
+# Salesforce properties - 228 GA version sandbox:
 sfdc:
   user: "![d5HIVDGMXBKa0wP9bR1YZdqW0+Fc2YuCFUj6ElHVKwM=]"
   password: "![oyZUKMW5wRP1bnQs771vys5KSABMcFgq]"
