@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9603a090-63b6-4c24-9e11-d1b306b7b508" >
-		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" securityToken="${secure::sfdc.token}" url="https://test.salesforce.com/services/Soap/u/49.0"/>
+		<salesforce:basic-connection username="john.vansant@billingmulesoft.com" password="M!chaela1" url="https://db000000061wgmaq.my.salesforce.com/services/Soap/u/49.0"/>
 	</salesforce:sfdc-config>
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="70813923-f48d-453e-ac25-7014e060af25" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
@@ -93,6 +93,48 @@ output application/json
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+	</flow>
+	<flow name="invoiceToFinancialTransaction" doc:id="170c56eb-05e5-47bf-8f48-1b7206f97625" >
+		<salesforce:modified-object-listener objectType="blng__Invoice__c" doc:name="On Modified Object" doc:id="9006d9b4-32d1-4a62-bddf-6c2950f269a1" config-ref="Salesforce_Config">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<choice doc:name="Choice" doc:id="b160cd26-a873-4084-845d-0f0b258e2dd4" >
+			<when expression="#[payload.blng__InvoiceStatus__c == 'Posted']">
+				<ee:transform doc:name="Transform Message" doc:id="be01e8fa-4980-46f3-b007-7c79583af1cd">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	CurrencyIsoCode: payload.CurrencyIsoCode,
+	ReferenceEntityId: payload.Id,
+	ReferenceEntityType: "Invoice",
+	EventAction: "Post an invoice",
+	EventType: "Posted",
+	Subtotal: payload.blng__Subtotal__c,
+	TaxAmount: payload.blng__TaxAmount__c,
+	TotalAmountWithTax: payload.blng__TotalAmount__c,
+	ResultingBalance: payload.blng__Balance__c,
+	AccountId: payload.blng__Account__c,
+	TransactionDate: now() as String {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	EffectiveDate: now() as String {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	DueDate: payload.blng__DueDate__c as String {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
+	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
+	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:create doc:name="Create Finance Transaction for Invoice" doc:id="3cd63288-4576-4a80-99b7-84cd2a97aca5" config-ref="Salesforce_Config" type="FinanceTransaction"/>
+				<salesforce:query doc:name="Query Invoice Line Information" doc:id="46258290-3e60-4616-9d99-d4408a2b6649" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[SELECT Account__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__DueDate__c,blng__ImpactAmount__c,blng__LegalEntity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,CurrencyIsoCode FROM blng__InvoiceLine__c]]></salesforce:salesforce-query>
+		</salesforce:query>
+			</when>
+		</choice>
+		<set-variable value="" doc:name="Invoice Line Query Results" doc:id="7899ddc2-9f7b-4aef-a111-1922e2f6a797" variableName=" invoiceLineQueryResults"/>
+		<logger level="INFO" doc:name="Logger" doc:id="255ebe8d-1202-42f4-aa2f-cb0e9dd8207a" message="Got to here "/>
 	</flow>
 	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
 		<salesforce:query doc:name="Query Account Name in Salesforce" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
