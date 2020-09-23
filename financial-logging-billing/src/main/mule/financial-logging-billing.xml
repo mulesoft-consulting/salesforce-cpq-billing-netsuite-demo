@@ -102,7 +102,7 @@ payload]]></ee:set-payload>
 		</salesforce:modified-object-listener>
 		<choice doc:name="Choice" doc:id="b160cd26-a873-4084-845d-0f0b258e2dd4" >
 			<when expression="#[payload.blng__InvoiceStatus__c == 'Posted']">
-				<ee:transform doc:name="Transform Message" doc:id="be01e8fa-4980-46f3-b007-7c79583af1cd">
+				<ee:transform doc:name="Prep payload to Create Financial Transaction Invoice" doc:id="be01e8fa-4980-46f3-b007-7c79583af1cd">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/java
@@ -118,9 +118,9 @@ output application/java
 	TotalAmountWithTax: payload.blng__TotalAmount__c,
 	ResultingBalance: payload.blng__Balance__c,
 	AccountId: payload.blng__Account__c,
-	TransactionDate: now() as String {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
-	EffectiveDate: now() as String {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
-	DueDate: payload.blng__DueDate__c as String {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	TransactionDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	EffectiveDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	DueDate: payload.blng__DueDate__c as Date {format: "yyyy-MM-dd"},
 	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
 	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
 	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c
@@ -128,6 +128,7 @@ output application/java
 					</ee:message>
 				</ee:transform>
 				<salesforce:create doc:name="Create Finance Transaction for Invoice" doc:id="3cd63288-4576-4a80-99b7-84cd2a97aca5" config-ref="Salesforce_Config" type="FinanceTransaction"/>
+				<logger level="INFO" doc:name="Log success or fail" doc:id="60d589e7-015e-4540-927d-1093aa7e62b5" message='#[if (payload.successful == true) "Successfully added Financial Transaction Record" else "Error adding Financial Transaction Record"]'/>
 				<salesforce:query doc:name="Query Invoice Line Information" doc:id="46258290-3e60-4616-9d99-d4408a2b6649" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query><![CDATA[SELECT Account__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__DueDate__c,blng__ImpactAmount__c,blng__LegalEntity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,CurrencyIsoCode FROM blng__InvoiceLine__c]]></salesforce:salesforce-query>
 		</salesforce:query>
