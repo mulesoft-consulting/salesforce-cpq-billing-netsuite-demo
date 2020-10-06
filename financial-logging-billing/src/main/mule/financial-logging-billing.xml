@@ -22,6 +22,9 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
 	<global-property doc:name="Global Property" doc:id="906ab8c7-3aaf-4995-bf60-72b9404625b4" name="encryption.key" value="mulesoft_password" />
+	<netsuite:rest-config name="NetSuite_Rest_config" doc:name="NetSuite Rest config" doc:id="9629156f-a832-476e-aec3-acc014556579" >
+		<netsuite:restlet-login-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}"/>
+	</netsuite:rest-config>
 	<flow name="financial-logging-billingFlow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
 		<http:listener doc:name="/syncFinTran" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTran"/>
 		<ee:transform doc:name="Get query-param fin_tran_id" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
@@ -94,49 +97,6 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="invoiceToFinancialTransaction" doc:id="170c56eb-05e5-47bf-8f48-1b7206f97625" >
-		<salesforce:modified-object-listener objectType="blng__Invoice__c" doc:name="On Modified Object" doc:id="9006d9b4-32d1-4a62-bddf-6c2950f269a1" config-ref="Salesforce_Config">
-			<scheduling-strategy >
-				<fixed-frequency />
-			</scheduling-strategy>
-		</salesforce:modified-object-listener>
-		<choice doc:name="Choice" doc:id="b160cd26-a873-4084-845d-0f0b258e2dd4" >
-			<when expression="#[payload.blng__InvoiceStatus__c == 'Posted']">
-				<ee:transform doc:name="Prep payload to Create Financial Transaction Invoice" doc:id="be01e8fa-4980-46f3-b007-7c79583af1cd">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
-output application/java
----
-[{
-	CurrencyIsoCode: payload.CurrencyIsoCode,
-	ReferenceEntityId: payload.Id,
-	ReferenceEntityType: "Invoice",
-	EventAction: "Post an invoice",
-	EventType: "Posted",
-	Subtotal: payload.blng__Subtotal__c,
-	TaxAmount: payload.blng__TaxAmount__c,
-	TotalAmountWithTax: payload.blng__TotalAmount__c,
-	ResultingBalance: payload.blng__Balance__c,
-	AccountId: payload.blng__Account__c,
-	TransactionDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
-	EffectiveDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
-	DueDate: payload.blng__DueDate__c as Date {format: "yyyy-MM-dd"},
-	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
-	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
-	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c
-}]]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<salesforce:create doc:name="Create Finance Transaction for Invoice" doc:id="3cd63288-4576-4a80-99b7-84cd2a97aca5" config-ref="Salesforce_Config" type="FinanceTransaction"/>
-				<logger level="INFO" doc:name="Log success or fail" doc:id="60d589e7-015e-4540-927d-1093aa7e62b5" message='#[if (payload.successful == true) "Successfully added Financial Transaction Record" else "Error adding Financial Transaction Record"]'/>
-				<salesforce:query doc:name="Query Invoice Line Information" doc:id="46258290-3e60-4616-9d99-d4408a2b6649" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query><![CDATA[SELECT Account__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__DueDate__c,blng__ImpactAmount__c,blng__LegalEntity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,CurrencyIsoCode FROM blng__InvoiceLine__c]]></salesforce:salesforce-query>
-		</salesforce:query>
-			</when>
-		</choice>
-		<set-variable value="" doc:name="Invoice Line Query Results" doc:id="7899ddc2-9f7b-4aef-a111-1922e2f6a797" variableName=" invoiceLineQueryResults"/>
-		<logger level="INFO" doc:name="Logger" doc:id="255ebe8d-1202-42f4-aa2f-cb0e9dd8207a" message="Got to here "/>
-	</flow>
 	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
 		<salesforce:query doc:name="Query Account Name in Salesforce" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT Name from Account WHERE Id = ':account_id']]></salesforce:salesforce-query>
@@ -174,21 +134,21 @@ output application/java
 	invoice_id : vars.finTranPayload[0].ReferenceEntityId
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<salesforce:query doc:name="Query Order Items in Salesforce" doc:id="eb25074c-9b58-4064-a257-077e7b2c492c" config-ref="Salesforce_Config" target="orderItemsPayload">
-			<salesforce:salesforce-query ><![CDATA[SELECT AvailableQuantity,blng__AllocatedRevenueAmount__c,blng__Asset__c,blng__BillableUnitPrice__c,blng__BilledAmountwithouttax__c,blng__BilledTax__c,blng__BillingAccount__c,blng__BillingGLRule__c,blng__BillingGLTreatment__c,blng__BillingRule__c,blng__BillingTreatment__c,blng__BillThroughDateOverride__c,blng__CanceledBillings__c,blng__FinanceBookAccounting__c,blng__GroupId__c,blng__GroupQuantity__c,blng__GroupUnitPrice__c,blng__HoldBilling__c,blng__IncludedUsage__c,blng__InvoiceGroupId__c,blng__InvoiceGrouping__c,blng__InvoiceRunProcessingStatus__c,blng__InvoiceRunStartDate__c,blng__InvoiceRunStatusIndex__c,blng__InvoiceRun__c,blng__LastChargeToDate__c,blng__LastInvoiceTargetDate__c,blng__LegalEntityReference__c,blng__LegalEntity__c,blng__NextBillingDate__c,blng__NextChargeDate__c,blng__OverrideBillableUnitPrice__c,blng__OverrideInitialRevenueEndDate__c,blng__OverrideInitialRevenueStartDate__c,blng__OverrideNextBillingDate__c,blng__PendingBillings__c,blng__RevenueExpectedAmount__c,blng__RevenueLiabilityAmount__c,blng__RevenueMostLikelyAmount__c,blng__RevenueRecognitionRule__c,blng__RevenueScheduleStatus__c,blng__TaxCity__c,blng__TaxCountry__c,blng__TaxCounty__c,blng__TaxErrorMessage__c,blng__TaxGLRule__c,blng__TaxGLTreatment__c,blng__TaxPercentageApplied__c,blng__TaxRule__c,blng__TaxState__c,blng__TaxStatus__c,blng__TaxStreet2__c,blng__TaxStreet__c,blng__TaxTreatment__c,blng__TaxZipCode__c,blng__TerminatedBillings__c,blng__TotalBilling__c,blng__UniqueId__c,blng__UsageFloorQuantity__c,CreatedById,CreatedDate,Description,EndDate,Id,IsDeleted,LastModifiedById,LastModifiedDate,ListPrice,OrderId,OrderItemNumber,OriginalOrderItemId,PricebookEntryId,Product2Id,Quantity,SBQQ__Activated__c,SBQQ__Asset__c,SBQQ__BillingFrequency__c,SBQQ__BillingType__c,SBQQ__BlockPrice__c,SBQQ__BookingsIndicator__c,SBQQ__BundleRoot__c,SBQQ__ChargeType__c,SBQQ__ContractAction__c,SBQQ__Contracted__c,SBQQ__ContractingMethod__c,SBQQ__Contract__c,SBQQ__DefaultSubscriptionTerm__c,SBQQ__DimensionType__c,SBQQ__DiscountSchedule__c,SBQQ__OrderedQuantity__c,SBQQ__OrderProductBookings__c,SBQQ__PriceDimension__c,SBQQ__PriceSchedule__c,SBQQ__PricingMethod__c,SBQQ__ProductSubscriptionType__c,SBQQ__ProrateMultiplier__c,SBQQ__QuotedListPrice__c,SBQQ__QuotedQuantity__c,SBQQ__QuoteLine__c,SBQQ__RequiredBy__c,SBQQ__RevisedOrderProduct__c,SBQQ__SegmentIndex__c,SBQQ__SegmentKey__c,SBQQ__ShippingAccount__c,SBQQ__Status__c,SBQQ__SubscriptionPricing__c,SBQQ__SubscriptionTerm__c,SBQQ__SubscriptionType__c,SBQQ__Subscription__c,SBQQ__TaxAmount__c,SBQQ__TaxCode__c,SBQQ__TermDiscountSchedule__c,SBQQ__TerminatedDate__c,SBQQ__UnproratedNetPrice__c,SBQQ__UpgradedSubscription__c,ServiceDate,SystemModstamp,TotalPrice,UnitPrice FROM OrderItem where OrderId = ':order_id']]></salesforce:salesforce-query>
+		<salesforce:query doc:name="Query InvoiceLines in Salesforce" doc:id="eb25074c-9b58-4064-a257-077e7b2c492c" config-ref="Salesforce_Config" target="lineItemsPayload">
+			<salesforce:salesforce-query ><![CDATA[SELECT blng__InvoiceLineStatus__c,blng__Notes__c,blng__Product__c,blng__Quantity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,blng__UniqueId__c,Id FROM blng__InvoiceLine__c WHERE blng__Invoice__c = ':invoice_id']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
-	order_id : vars.invoiceDetailsPayload[0].blng__Order__c
+	invoice_id : vars.invoiceDetailsPayload[0].Id
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<foreach doc:name="For Each Order Line Item" doc:id="4c06f23b-6c16-4435-b89f-319b01b49521" collection="#[vars.orderItemsPayload]" rootMessageVariableName="orderItem">
+		<foreach doc:name="For Each Line Item" doc:id="4c06f23b-6c16-4435-b89f-319b01b49521" collection="#[vars.lineItemsPayload]" rootMessageVariableName="orderItem">
 			<salesforce:query doc:name="Lookup Order Item Product Name &amp; Price" doc:id="b5c0b7f8-00bc-43c1-a8dc-997a400511f8" config-ref="Salesforce_Config" target="productPayload">
-				<salesforce:salesforce-query ><![CDATA[SELECT Name,UnitPrice FROM PricebookEntry where Id=':priceBookEntry_id']]></salesforce:salesforce-query>
+				<salesforce:salesforce-query ><![CDATA[SELECT Name, UnitPrice FROM PricebookEntry where Product2Id = ':priceBookEntry_id']]></salesforce:salesforce-query>
 				<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
-	priceBookEntry_id : payload.PricebookEntryId
+	priceBookEntry_id : payload.blng__Product__c
 }]]]></salesforce:parameters>
 			</salesforce:query>
 			<ee:transform doc:name="Prep search payload" doc:id="1b4ff33d-ba68-4b9a-a7ac-68b7b613b0e3">
@@ -199,15 +159,13 @@ output application/java
 {
 	item: {
 		operator: "ANY_OF",
-		searchValue: [{
-			name: (vars.productPayload[0].Name default ""),
-			"type": "INVENTORY_ITEM"
-		}]
+		searchValue: vars.productPayload map ( productPayload , indexOfProductPayload ) -> {
+			name: productPayload.Name
+		}
 	}
 } as Object {
 	class : "com.mulesoft.connector.netsuite.extension.api.InventoryNumberSearchBasic"
-}
-]]></ee:set-payload>
+}]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
 			<netsuite:search doc:name="Search for Inventory Item in NetSuite" doc:id="a7ac653a-da00-4fbf-94c1-38baee34257a" config-ref="NetSuite_Config" key="INVENTORY_NUMBER_BASIC" pageSize="10" target="netsuiteInventoryItem"/>

@@ -44,12 +44,6 @@
             <classifier>mule-plugin</classifier>
         </dependency>
     	<dependency>
-            <groupId>com.mulesoft.connectors</groupId>
-            <artifactId>mule-netsuite-connector</artifactId>
-            <version>10.0.0</version>
-            <classifier>mule-plugin</classifier>
-        </dependency>
-    	<dependency>
             <groupId>com.mulesoft.modules</groupId>
             <artifactId>mule-secure-configuration-property-module</artifactId>
             <version>1.2.3</version>
@@ -59,6 +53,18 @@
             <groupId>com.mulesoft.connectors</groupId>
             <artifactId>mule-salesforce-connector</artifactId>
             <version>10.4.1</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    	<dependency>
+            <groupId>org.mule.modules</groupId>
+            <artifactId>mule-compression-module</artifactId>
+            <version>2.1.1</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    	<dependency>
+            <groupId>com.mulesoft.connectors</groupId>
+            <artifactId>mule-netsuite-connector</artifactId>
+            <version>10.0.2</version>
             <classifier>mule-plugin</classifier>
         </dependency>
     </dependencies>
