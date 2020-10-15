@@ -13,10 +13,11 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
 	<global-property doc:name="Global Property" doc:id="6734182e-3bab-4cdf-a6ae-611647257ee8" name="encryption.key" value="mulesoft_password" />
+	<configuration-properties doc:name="Configuration properties" doc:id="14467cac-7bca-4a02-8d70-38ff2ecf5750" file="config/config.yaml" />
 	<flow name="invoiceToFinancialTransaction" doc:id="d9a9f112-2a91-4930-a09f-c84b4761301c" >
 		<salesforce:modified-object-listener objectType="blng__Invoice__c" doc:id="87534ada-9005-4dfe-bdc3-76a759ca38f9" config-ref="Salesforce_Config" doc:name="On Modified Object" >
 			<scheduling-strategy >
-				<fixed-frequency />
+				<fixed-frequency frequency="${sfdc.polling_interval}"/>
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
 		<set-variable value="#[payload]" doc:name="Save Invoice" doc:id="64784f97-ac63-417d-b184-f714db7c15e9" variableName="invoicePayload" />
