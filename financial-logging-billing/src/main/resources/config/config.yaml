@@ -2,4 +2,7 @@
 #
 ns:
   email: "demos+sfdc5netsuite@mulesoft.com"
-  
+
+# polling interval is in milliseconds
+sfdc:
+  polling_interval: "5000"

@@ -62,7 +62,7 @@ payload]]></ee:set-payload>
 	<flow name="financial-logging-to-NetSuite-Invoice-Event-Flow" doc:id="5d767d36-e5e6-4168-a008-7e7d8cd3d01c">
 		<salesforce:new-object-listener doc:name="On New Finance Transaction Object" doc:id="8c2ac798-eff2-49c3-bd6f-60458465b0af" config-ref="Salesforce_Config" objectType="FinanceTransaction">
 			<scheduling-strategy>
-				<fixed-frequency frequency="5000"/>
+				<fixed-frequency frequency="${sfdc.polling_interval}"/>
 			</scheduling-strategy>
 		</salesforce:new-object-listener>
 		<set-variable value="#[payload]" doc:name="Save FinanceTransaction payload" doc:id="4d4e9142-0586-41a9-9f30-ca0dfb774cec" variableName="finTranPayload" />
