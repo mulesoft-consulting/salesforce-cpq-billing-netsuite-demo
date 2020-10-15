@@ -27,14 +27,5 @@ type invoice_object = {|
     </types:type>
   </types:catalog>
   <types:enrichment select="#4b6e38d6-56a1-4011-aa25-f7d581adea5c"/>
-  <types:enrichment select="#e27ae7ba-ff49-4eee-a636-c283b1240566">
-    <types:processor-declaration>
-      <types:output-event>
-        <types:message>
-          <types:payload type="invoice-object"/>
-        </types:message>
-      </types:output-event>
-    </types:processor-declaration>
-  </types:enrichment>
   <types:enrichment select="#e4be89b5-b356-4a7a-af88-d0d2085989e5"/>
 </types:mule>
