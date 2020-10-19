@@ -43,12 +43,13 @@ output application/java
 	DueDate: payload.blng__DueDate__c as Date {format: "yyyy-MM-dd"},
 	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
 	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
-	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c
+	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
+	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c
 }]]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 				<salesforce:create type="FinanceTransaction" doc:id="be2b86a1-8dec-407c-9272-b23e2c5be5e7" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Invoice" />
-				<set-variable value="" doc:name="Set Variable" doc:id="eafef198-3467-4851-a542-f84377fede51" variableName="Variable" />
+				<set-variable value="#[payload]" doc:name="invoicePayload" doc:id="eafef198-3467-4851-a542-f84377fede51" variableName="invoicePayload" />
 				<logger level="INFO" doc:name="Log success or fail" doc:id="c2460dc2-3311-403a-929e-8cb250458450" message="#[payload]" />
 				<salesforce:query doc:id="1e78fede-251d-4c75-8bab-cc85cbe48a72" config-ref="Salesforce_Config" doc:name="Query Invoice Line Information" >
 					<salesforce:salesforce-query ><![CDATA[SELECT Id,blng__Invoice__c,blng__BaseCurrencyFXDate__c,blng__BaseCurrencyFXRate__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__DueDate__c,blng__ImpactAmount__c,blng__LegalEntity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,CurrencyIsoCode FROM blng__InvoiceLine__c WHERE blng__Invoice__c = ':invoice_id' ]]></salesforce:salesforce-query>
@@ -66,7 +67,7 @@ output application/java
 output application/java
 ---
 [{
-	AccountId: vars.invoicepayload.blng__Account__c,
+	AccountId: vars.invoicePayload.blng__Account__c,
 	CurrencyIsoCode: payload.CurrencyIsoCode,
 	ReferenceEntityId: payload.Id,
 	ReferenceEntityType: "Invoice line",
@@ -81,7 +82,10 @@ output application/java
 	DueDate: payload.blng__DueDate__c as Date {format: "yyyy-MM-dd"},
 	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
 	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
-	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c
+	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
+	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c,
+	ImpactAmount: payload.blng__ImpactAmount__c,
+	LegalEntityId: payload.blng__LegalEntity__c
 }]]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
