@@ -1,0 +1,28 @@
+{
+	"customForm": {
+		"internalId": "92",
+		"name": "Standard Product Invoice"
+	},
+	"entity": {
+		"internalId": "668277",
+		"name": "CPQ Demo Customer"
+	},
+	"itemList": {
+		"item": [{
+			"item": {
+          "internalId": "9154",
+          "name": "24\" Auger"
+        },
+			"price": {
+          "internalId": "1",
+          "name": "Base Price"
+        },
+			"quantity": 2
+		}]
+	},
+	"postingPeriod": {
+		"internalId": "235",
+		"name": "Aug 2020"
+	},
+	"tranDate": "2020-08-20T00:00:00"
+}
