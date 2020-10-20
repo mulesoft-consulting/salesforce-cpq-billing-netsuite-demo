@@ -46,7 +46,8 @@ output application/java
 	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
 	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
 	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c
-}]]]></ee:set-payload>
+}]
+]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 				<salesforce:create type="FinanceTransaction" doc:id="be2b86a1-8dec-407c-9272-b23e2c5be5e7" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Invoice" />
