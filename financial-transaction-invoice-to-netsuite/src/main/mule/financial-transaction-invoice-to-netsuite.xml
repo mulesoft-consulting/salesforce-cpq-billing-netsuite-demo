@@ -26,7 +26,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<netsuite:restlet-login-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}"/>
 	</netsuite:rest-config>
 	<flow name="financial-logging-to-NetSuite-Invoice-REST-Flow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
-		<http:listener doc:name="/syncFinTran" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTran"/>
+		<http:listener doc:name="/syncFinTranInvoices" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTranInvoices"/>
 		<ee:transform doc:name="Get query-param fin_tran_id" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
 			<ee:message >
 			</ee:message>
@@ -35,10 +35,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 output application/java
 ---
 attributes.queryParams."fin_tran_id"]]></ee:set-variable>
-				<ee:set-variable variableName="orderLineItemsList" ><![CDATA[%dw 2.0
-output application/json
----
-[]]]></ee:set-variable>
+				<ee:set-variable variableName="orderLineItemsList" ><![CDATA[[]]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<salesforce:query doc:name="Get Financial Transaction Data" doc:id="e765faad-c7ec-419d-aa51-f86581ec3d37" config-ref="Salesforce_Config" target="finTranPayload" targetValue="#[payload[0]]">
@@ -92,7 +89,9 @@ output application/json
 		internalId: vars.netSuiteCustomer[0].internalId,
 		"name": vars.netSuiteCustomer[0].companyName
 	},
-	itemList: vars.orderLineItemsList,
+	itemList: {
+		item: vars.orderLineItemsList
+	},
 	postingPeriod: {
 		"internalId": vars.netsuiteAccountingPeriod[0].internalId,
 		"name": vars.netsuiteAccountingPeriod[0].periodName
@@ -181,16 +180,17 @@ output application/java
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-			<netsuite:search doc:name="Search for Inventory Item in NetSuite" doc:id="a7ac653a-da00-4fbf-94c1-38baee34257a" config-ref="NetSuite_Config" key="ITEM_BASIC" pageSize="10" target="netsuiteInventoryItem"/>
-			<ee:transform doc:name="Add Item to Invoice Line Item List" doc:id="e4be89b5-b356-4a7a-af88-d0d2085989e5" >
-				<ee:message >
+			<netsuite:search doc:name="Search for Inventory Item in NetSuite" doc:id="a7ac653a-da00-4fbf-94c1-38baee34257a" config-ref="NetSuite_Config" key="ITEM_BASIC" pageSize="10" target="netsuiteInventoryItem" />
+			<choice doc:name="Choice" doc:id="bddc209c-6da8-49e0-abe8-e0724615d5f8" >
+				<when expression="#[vars.netsuiteInventoryItem[0] != null]">
+					<ee:transform doc:name="Add Item to Invoice Line Item List" doc:id="e4be89b5-b356-4a7a-af88-d0d2085989e5">
+				<ee:message>
 				</ee:message>
-				<ee:variables >
-					<ee:set-variable variableName="orderLineItemsList" ><![CDATA[%dw 2.0
+				<ee:variables>
+					<ee:set-variable variableName="orderLineItemsList"><![CDATA[%dw 2.0
 output application/json
 ---
-{
-	item: [{
+vars.orderLineItemsList << {
 		item: {
           "internalId": vars.netsuiteInventoryItem[0].internalId,
           "name": vars.netsuiteInventoryItem[0].itemId
@@ -200,12 +200,16 @@ output application/json
           "name": "Base Price"
         },
 			quantity: vars.invoice_line_quantity as Number
-		}]
-}]]></ee:set-variable>
+		}]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
+				</when>
+				<otherwise >
+					<logger level="INFO" doc:name="Logger" doc:id="7f2bacea-e2e2-4f54-bddd-6108166257b9" message='#["No product available in NetSuite"]' />
+				</otherwise>
+			</choice>
+			<logger level="INFO" doc:name="Log Activity" doc:id="8e0018b9-f99f-4c9a-a6a7-cfafa0fc9dfd" message='#["looking up inventory items from NetSuite"]' />
 		</foreach>
-		<logger level="INFO" doc:name="Log Activity" doc:id="8e0018b9-f99f-4c9a-a6a7-cfafa0fc9dfd" message='#["looking up inventory items from NetSuite"]' />
 	</sub-flow>
 	<sub-flow name="lookup-accounting-period-in-netsuite-based-on-current-date" doc:id="af8195df-413a-47e4-8163-a888b0dd5650" >
 		<set-variable value='#[now() as String {format: "MMM yyyy"}]' doc:name="Get current date" doc:id="6992d61e-4d50-45cf-befb-2ade06722ae2" variableName="currentDate"/>
