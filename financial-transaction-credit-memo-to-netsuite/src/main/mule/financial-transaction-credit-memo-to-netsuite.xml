@@ -64,7 +64,7 @@ payload]]></ee:set-payload>
 		</salesforce:new-object-listener>
 		<set-variable value="#[payload]" doc:name="Save FinanceTransaction payload" doc:id="4d4e9142-0586-41a9-9f30-ca0dfb774cec" variableName="finTranPayload" />
 		<choice doc:name="Choice" doc:id="1a3bf7fc-8bf5-4f23-b4b1-309e4b6d7572">
-			<when expression='#[vars.finTranPayload.ReferenceEntityType == "Invoice"]'>
+			<when expression='#[vars.finTranPayload.ReferenceEntityType == "Credit memo"]'>
 				<flow-ref doc:name="Prepare and Create NetSuite Invoice" doc:id="6742fec1-9915-470f-965c-9f2271c08542" name="prepare-and-create-NetSuite-Credit-Memo"/>
 			</when>
 		</choice>
