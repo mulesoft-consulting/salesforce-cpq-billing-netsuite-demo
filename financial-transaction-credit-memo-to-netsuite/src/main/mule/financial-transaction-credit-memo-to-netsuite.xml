@@ -26,7 +26,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<netsuite:restlet-login-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}"/>
 	</netsuite:rest-config>
 	<flow name="financial-logging-to-NetSuite-Invoice-REST-Flow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
-		<http:listener doc:name="/syncFinTran" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTran"/>
+		<http:listener doc:name="/syncFinTranCreditMemo" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTranCreditMemo"/>
 		<ee:transform doc:name="Get query-param fin_tran_id" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
 			<ee:message >
 			</ee:message>
@@ -35,10 +35,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 output application/java
 ---
 attributes.queryParams."fin_tran_id"]]></ee:set-variable>
-				<ee:set-variable variableName="orderLineItemsList" ><![CDATA[%dw 2.0
-output application/json
----
-[]]]></ee:set-variable>
+				<ee:set-variable variableName="orderLineItemsList" ><![CDATA[[]]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<salesforce:query doc:name="Get Financial Transaction Data" doc:id="e765faad-c7ec-419d-aa51-f86581ec3d37" config-ref="Salesforce_Config" target="finTranPayload" targetValue="#[payload[0]]">
@@ -88,7 +85,9 @@ output application/json
 		internalId: vars.netSuiteCustomer[0].internalId,
 		"name": vars.netSuiteCustomer[0].companyName
 	},
-	itemList: vars.orderLineItemsList,
+	itemList: {
+		item: vars.orderLineItemsList
+	},
 	postingPeriod: {
 		"internalId": vars.netsuiteAccountingPeriod[0].internalId,
 		"name": vars.netsuiteAccountingPeriod[0].periodName
@@ -180,15 +179,14 @@ output application/java
 			<netsuite:search doc:name="Search for Inventory Item in NetSuite" doc:id="a7ac653a-da00-4fbf-94c1-38baee34257a" config-ref="NetSuite_Config" key="ITEM_BASIC" pageSize="10" target="netsuiteInventoryItem"/>
 			<choice doc:name="Choice" doc:id="1c96c6f5-a76d-4ae4-83c7-001d797e7e5f" >
 				<when expression="#[vars.netsuiteInventoryItem[0] != null]">
-					<ee:transform doc:name="Add Item to Invoice Line Item List" doc:id="e4be89b5-b356-4a7a-af88-d0d2085989e5">
+					<ee:transform doc:name="Append Item to Invoice Line Item List" doc:id="e4be89b5-b356-4a7a-af88-d0d2085989e5">
 				<ee:message>
 				</ee:message>
 				<ee:variables>
-					<ee:set-variable variableName="orderLineItemsList"><![CDATA[%dw 2.0
+							<ee:set-variable variableName="orderLineItemsList" ><![CDATA[%dw 2.0
 output application/json
 ---
-{
-	item: [{
+vars.orderLineItemsList << {
 		item: {
           "internalId": vars.netsuiteInventoryItem[0].internalId,
           "name": vars.netsuiteInventoryItem[0].itemId
@@ -198,8 +196,7 @@ output application/json
           "name": "Base Price"
         },
 			quantity: 1
-		}]
-}]]></ee:set-variable>
+		}]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
 				</when>
