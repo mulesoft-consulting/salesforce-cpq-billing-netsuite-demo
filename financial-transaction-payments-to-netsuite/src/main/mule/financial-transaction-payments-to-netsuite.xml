@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:netsuite="http://www.mulesoft.org/schema/mule/netsuite"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9603a090-63b6-4c24-9e11-d1b306b7b508" >
+		<salesforce:basic-connection username="john.vansant@billingmulesoft.com" password="M!chaela1" url="https://db000000061wgmaq.my.salesforce.com/services/Soap/u/49.0"/>
+	</salesforce:sfdc-config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="70813923-f48d-453e-ac25-7014e060af25" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<netsuite:config name="NetSuite_Config" doc:name="NetSuite Config" doc:id="744438c6-8a08-4f7c-8e4e-d1d3c05e3380" >
+		<netsuite:request-based-authentication-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}" />
+	</netsuite:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="89260b15-1446-4a5a-96da-cf65b6d08083" file="config/config.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e1672828-170d-4583-99a9-ba984fde9623" file="config/config-secure.yaml" key="${encryption.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="906ab8c7-3aaf-4995-bf60-72b9404625b4" name="encryption.key" value="mulesoft_password" />
+	<netsuite:rest-config name="NetSuite_Rest_config" doc:name="NetSuite Rest config" doc:id="9629156f-a832-476e-aec3-acc014556579" >
+		<netsuite:restlet-login-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}"/>
+	</netsuite:rest-config>
+	<flow name="financial-logging-to-NetSuite-payments-REST-Flow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
+		<http:listener doc:name="/syncFinTranPayments" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTranPayments"/>
+		<ee:transform doc:name="Get query-param fin_tran_id" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="fin_tran_id_to_sync" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.queryParams."fin_tran_id"]]></ee:set-variable>
+				<ee:set-variable variableName="orderLineItemsList" ><![CDATA[[]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query doc:name="Get Financial Transaction Data" doc:id="e765faad-c7ec-419d-aa51-f86581ec3d37" config-ref="Salesforce_Config" target="finTranPayload" targetValue="#[payload[0]]">
+			<salesforce:salesforce-query ><![CDATA[SELECT AccountId,AdjustmentAmount,BaseCurrencyAmount,BaseCurrencyBalance,BaseCurrencyFxDate,BaseCurrencyFxRate,BaseCurrencyIsoCode,ChargeAmount,CreatedById,CreatedDate,CurrencyIsoCode,DestinationEntityId,DueDate,EffectiveDate,EventAction,EventType,FinanceTransactionNumber,Id,ImpactAmount,IsDeleted,LastModifiedById,LastModifiedDate,LegalEntityId,ReferenceEntityId,ReferenceEntityType,ResultingBalance,SourceEntityId,Subtotal,SystemModstamp,TaxAmount,TotalAmountWithTax,TransactionDate FROM FinanceTransaction where Id = ':fin_tran_id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	fin_tran_id : vars.fin_tran_id_to_sync
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<flow-ref doc:name="Prepare and Create NetSuite Payment" doc:id="69033075-47ad-4ef1-bb90-5fa26d4e83bb" name="prepare-and-create-NetSuite-Payment" />
+		<ee:transform doc:name="Transform Response to JSON" doc:id="69c58149-212a-4f28-9634-855f971613ee" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="financial-logging-to-NetSuite-Invoice-Event-Flow" doc:id="5d767d36-e5e6-4168-a008-7e7d8cd3d01c">
+		<salesforce:new-object-listener doc:name="On New Finance Transaction Object" doc:id="8c2ac798-eff2-49c3-bd6f-60458465b0af" config-ref="Salesforce_Config" objectType="FinanceTransaction">
+			<scheduling-strategy>
+				<fixed-frequency frequency="${sfdc.polling_interval}"/>
+			</scheduling-strategy>
+		</salesforce:new-object-listener>
+		<set-variable value="#[payload]" doc:name="Save FinanceTransaction payload" doc:id="4d4e9142-0586-41a9-9f30-ca0dfb774cec" variableName="finTranPayload" />
+		<choice doc:name="Choice" doc:id="1a3bf7fc-8bf5-4f23-b4b1-309e4b6d7572">
+			<when expression='#[vars.finTranPayload.ReferenceEntityType == "Payment"]'>
+				<flow-ref doc:name="Prepare and Create NetSuite Payment" doc:id="6742fec1-9915-470f-965c-9f2271c08542" name="prepare-and-create-NetSuite-Payment"/>
+			</when>
+		</choice>
+	</flow>
+	<sub-flow name="prepare-and-create-NetSuite-Payment" doc:id="c0084065-b22e-4697-93c5-8e81e1bdb725" >
+		<flow-ref doc:name="Lookup NetSuite Customer ID from Salesforce Account ID" doc:id="d24050b3-71f6-4ac4-87b2-59ac4df09c82" name="lookup-customer-id-from-netsuite" />
+		<flow-ref doc:name="Lookup Accounting Period in NetSuite based on current date" doc:id="87945943-1d2c-4741-b269-acdcd55e76c5" name="lookup-accounting-period-in-netsuite-based-on-current-date" />
+		<set-variable value="#[now() as String {format: &quot;yyyy-MM-dd'T'hh:mm:ss&quot;}]" doc:name="Get current date and time" doc:id="42385d57-64a0-4326-9500-4974d6c5c061" variableName="currentDateTime" />
+		<ee:transform doc:name="Prep payload for NetSuite" doc:id="b677ede3-adbf-4ba0-957c-28aaf38bd127">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+	customer: {
+		internalId: vars.netSuiteCustomer[0].internalId,
+		"name": vars.netSuiteCustomer[0].companyName
+	},
+	payment: vars.finTranPayload.TotalAmountWithTax,
+	postingPeriod: {
+		"internalId": vars.netsuiteAccountingPeriod[0].internalId,
+		"name": vars.netsuiteAccountingPeriod[0].periodName
+	},
+	tranDate: vars.currentDateTime
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<netsuite:add-record recordType="CUSTOMER_PAYMENT" doc:name="Add Customer Payment Record" doc:id="aee4458f-9013-46f9-b0f0-e45ed122f2a4" config-ref="NetSuite_Config" />
+	</sub-flow>
+	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
+		<salesforce:query doc:name="Query Account Name in Salesforce" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Name from Account WHERE Id = ':account_id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	account_id : vars.finTranPayload.AccountId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Prep search payload" doc:id="c323ec0e-7883-4e2f-a62a-27e8d9f9f360" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	companyName: {
+		operator: "CONTAINS",
+		searchValue: payload[0].Name
+	}
+} as Object {
+	class : "com.mulesoft.connector.netsuite.extension.api.CustomerSearchBasic"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<netsuite:search key="CUSTOMER" doc:name="Search for Customer details in NetSuite" doc:id="566eb88c-9131-4903-a024-bc13ccc3c11f" config-ref="NetSuite_Config" pageSize="10" target="netSuiteCustomer">
+		</netsuite:search>
+	</sub-flow>
+	<sub-flow name="lookup-accounting-period-in-netsuite-based-on-current-date" doc:id="af8195df-413a-47e4-8163-a888b0dd5650" >
+		<set-variable value='#[now() as String {format: "MMM yyyy"}]' doc:name="Get current date" doc:id="6992d61e-4d50-45cf-befb-2ade06722ae2" variableName="currentDate"/>
+		<ee:transform doc:name="Prep payload for search" doc:id="bde5916c-5529-4181-b606-2540e1d5c160" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	periodName: {
+		operator: "IS",
+		searchValue: vars.currentDate
+	} as Object {
+		class : "com.mulesoft.connector.netsuite.extension.api.SearchStringField"
+	}
+} as Object {
+	class : "com.mulesoft.connector.netsuite.extension.api.AccountingPeriodSearchBasic"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<netsuite:search key="ACCOUNTING_PERIOD_BASIC" doc:name="Search for Accounting Period in NetSuite" doc:id="b5d349ac-cd9f-4e1a-8587-ffc25dff3ba2" config-ref="NetSuite_Config" pageSize="10" target="netsuiteAccountingPeriod" />
+	</sub-flow>
+</mule>
