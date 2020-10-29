@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9fba2de0-0a33-4634-b061-0330855dd12c" >
+		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="https://db000000061wgmaq.my.salesforce.com/services/Soap/u/49.0"/>
+	</salesforce:sfdc-config>
+	<global-property doc:name="Global Property" doc:id="ad80ce27-fe15-4fda-8f1d-dd945a2cfaa2" name="encryption.key" value="mulesoft_password" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="6fb9037c-9850-4524-a10d-c5ddbe896d48" file="config/config-secure.yaml" key="${encryption.key}">
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<flow name="PaymentToFinanceTransaction" doc:id="031a6422-195f-416d-8bc9-b5f0e80de0c2" >
+		<salesforce:modified-object-listener objectType="blng__Payment__c" doc:id="c5aa5cc9-bab9-4be5-8965-fb61f4149e34" config-ref="Salesforce_Config" doc:name="On Modified Object" >
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<set-variable value="#[payload]" doc:name="Save Payment Payload" doc:id="8d33842b-ceda-4c21-9294-31c08b1d76ae" variableName="paymentPayload" />
+		<choice doc:name="Choice" doc:id="32b7ad47-568d-44b7-8d40-b69aaba82e7b" >
+			<when expression="#[vars.paymentPayload.blng__Status__c == 'Posted']" >
+				<ee:transform doc:name="Create Financial Transaction from Payment" doc:id="4d9797a9-fb13-41f3-8162-dc47966c0afe" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	CurrencyIsoCode: payload.CurrencyIsoCode,
+	ReferenceEntityId: payload.Id,
+	ReferenceEntityType: "Payment",
+	EventAction: "Post a standalone payment",
+	EventType: "Posted",
+	TotalAmountWithTax: payload.blng__Amount__c,
+	ResultingBalance: payload.blng__Balance__c,
+	AccountId: payload.blng__Account__c,
+	TransactionDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	EffectiveDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
+	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
+	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
+	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c,
+	ImpactAmount: payload.blng__ImpactAmount__c
+}]
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:create type="FinanceTransaction" doc:id="95f14b00-edca-4c88-b712-094b9c646a16" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Payment" />
+				<logger level="INFO" doc:name="Log result" doc:id="cb3646bc-a118-4826-8fed-ab84865d238a" message="#[payload]" />
+			</when>
+		</choice>
+	</flow>
+</mule>
