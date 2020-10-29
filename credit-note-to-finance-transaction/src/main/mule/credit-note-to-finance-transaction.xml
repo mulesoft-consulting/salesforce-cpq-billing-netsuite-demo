@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9fba2de0-0a33-4634-b061-0330855dd12c" >
+		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="https://db000000061wgmaq.my.salesforce.com/services/Soap/u/49.0"/>
+	</salesforce:sfdc-config>
+	<global-property doc:name="Global Property" doc:id="ad80ce27-fe15-4fda-8f1d-dd945a2cfaa2" name="encryption.key" value="mulesoft_password" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="6fb9037c-9850-4524-a10d-c5ddbe896d48" file="config/config-secure.yaml" key="${encryption.key}">
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<flow name="CreditNoteToFinancialTransaction" doc:id="031a6422-195f-416d-8bc9-b5f0e80de0c2" >
+		<salesforce:modified-object-listener objectType="blng__CreditNote__c" doc:id="c5aa5cc9-bab9-4be5-8965-fb61f4149e34" config-ref="Salesforce_Config" doc:name="On Modified Object" >
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<set-variable value="#[payload]" doc:name="Save Credit Note" doc:id="8d33842b-ceda-4c21-9294-31c08b1d76ae" variableName="creditNotePayload" />
+		<choice doc:name="Choice" doc:id="32b7ad47-568d-44b7-8d40-b69aaba82e7b" >
+			<when expression="#[vars.creditNotePayload.blng__Status__c == 'Posted']" >
+				<ee:transform doc:name="Create Financial Transaction from Credit Note" doc:id="4d9797a9-fb13-41f3-8162-dc47966c0afe" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	CurrencyIsoCode: payload.CurrencyIsoCode,
+	ReferenceEntityId: payload.Id,
+	ReferenceEntityType: "Credit memo",
+	EventAction: "Issue a standalone credit",
+	EventType: "Posted",
+	Subtotal: payload.blng__Subtotal__c,
+	TaxAmount: payload.blng__TaxAmount__c,
+	TotalAmountWithTax: payload.blng__TotalAmount__c,
+	ResultingBalance: payload.blng__Balance__c,
+	AccountId: payload.blng__Account__c,
+	TransactionDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	EffectiveDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
+	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
+	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
+	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c,
+	ImpactAmount: payload.blng__ImpactAmount__c
+}]
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:create type="FinanceTransaction" doc:id="95f14b00-edca-4c88-b712-094b9c646a16" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Credit Note" />
+				<logger level="INFO" doc:name="Log result" doc:id="cb3646bc-a118-4826-8fed-ab84865d238a" message="#[payload]" />
+				<salesforce:query doc:id="0db71a86-9985-4314-98fd-6b997f4eb553" config-ref="Salesforce_Config" doc:name="Query Credit Note Line Information" >
+					<salesforce:salesforce-query ><![CDATA[SELECT Id,blng__CreditNote__c,blng__BaseCurrencyFXDate__c,blng__BaseCurrencyFXRate__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__ImpactAmount__c,blng__LegalEntity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,CurrencyIsoCode FROM blng__CreditNoteLine__c WHERE blng__CreditNote__c= ':creditnote_id' ]]></salesforce:salesforce-query>
+					<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	creditnote_id : vars.creditNotePayload.Id
+}]]]></salesforce:parameters>
+				</salesforce:query>
+				<logger level="INFO" doc:name="Logger" doc:id="303ce94d-4676-42de-b19c-5394d8e9a59a" message="#[payload]" />
+				<foreach doc:name="For Each" doc:id="14f8484d-cdb7-4999-9683-9cc5ffa9d10f" >
+					<ee:transform doc:name="Prep Payload to Create Financial Transaction for Credit Note Line" doc:id="12781c0f-769a-44a6-968b-f2cd4427f1e7" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	AccountId: vars.creditNotePayload.blng__Account__c,
+	CurrencyIsoCode: payload.CurrencyIsoCode,
+	ReferenceEntityId: payload.Id,
+	ReferenceEntityType: "Credit memo line",
+	EventAction: "Issue a standalone credit",
+	EventType: "Posted",
+	Subtotal: payload.blng__Subtotal__c,
+	TaxAmount: payload.blng__TaxAmount__c,
+	TotalAmountWithTax: payload.blng__TotalAmount__c,
+	ResultingBalance: payload.blng__Balance__c,
+	TransactionDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	EffectiveDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
+	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
+	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
+	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c,
+	ImpactAmount: payload.blng__ImpactAmount__c,
+	LegalEntityId: payload.blng__LegalEntity__c
+}]]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<salesforce:create type="FinanceTransaction" doc:id="650a07c5-146e-43fc-991f-84966e6bf612" config-ref="Salesforce_Config" doc:name="Create Financial Transaction for Credit Note Line" />
+					<logger level="INFO" doc:name="Log success or fail" doc:id="518ca7c3-bd69-46b1-b118-786d87a74491" message='#[if (payload.successful == true) "Successfully added Financial Transaction Record" else "Error adding Financial Transaction Record"]' />
+				</foreach>
+			</when>
+		</choice>
+		<set-variable value="" doc:name="Credit Note Line Query Results" doc:id="e52ddc2a-1560-43e1-8e8e-f91664479e4c" variableName=" invoiceLineQueryResults" />
+		<logger level="INFO" doc:name="Logger" doc:id="a3d24ca1-5aa5-4981-9a98-3e3a607ffb52" message="Got to here " />
+	</flow>
+</mule>
