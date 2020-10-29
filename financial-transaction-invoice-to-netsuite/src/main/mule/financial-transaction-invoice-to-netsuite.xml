@@ -22,9 +22,6 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
 	<global-property doc:name="Global Property" doc:id="906ab8c7-3aaf-4995-bf60-72b9404625b4" name="encryption.key" value="mulesoft_password" />
-	<netsuite:rest-config name="NetSuite_Rest_config" doc:name="NetSuite Rest config" doc:id="9629156f-a832-476e-aec3-acc014556579" >
-		<netsuite:restlet-login-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}"/>
-	</netsuite:rest-config>
 	<flow name="financial-logging-to-NetSuite-Invoice-REST-Flow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
 		<http:listener doc:name="/syncFinTranInvoices" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTranInvoices"/>
 		<ee:transform doc:name="Get query-param fin_tran_id" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
