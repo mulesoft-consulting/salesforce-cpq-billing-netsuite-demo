@@ -1,0 +1,5 @@
+# Non-secure properties file:
+#
+# polling interval is in milliseconds
+sfdc:
+  polling_interval: "5000"

@@ -13,10 +13,11 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="6fb9037c-9850-4524-a10d-c5ddbe896d48" file="config/config-secure.yaml" key="${encryption.key}">
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="4292c7b9-83f2-4368-b675-57b8a04991a8" file="config/config.yaml" />
 	<flow name="CreditNoteToFinancialTransaction" doc:id="031a6422-195f-416d-8bc9-b5f0e80de0c2" >
 		<salesforce:modified-object-listener objectType="blng__CreditNote__c" doc:id="c5aa5cc9-bab9-4be5-8965-fb61f4149e34" config-ref="Salesforce_Config" doc:name="On Modified Object" >
 			<scheduling-strategy >
-				<fixed-frequency />
+				<fixed-frequency frequency="${sfdc.polling_interval}"/>
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
 		<set-variable value="#[payload]" doc:name="Save Credit Note" doc:id="8d33842b-ceda-4c21-9294-31c08b1d76ae" variableName="creditNotePayload" />
