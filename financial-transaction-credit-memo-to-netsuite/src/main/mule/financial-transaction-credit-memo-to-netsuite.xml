@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9603a090-63b6-4c24-9e11-d1b306b7b508" >
-		<salesforce:basic-connection username="john.vansant@billingmulesoft.com" password="M!chaela1" url="https://db000000061wgmaq.my.salesforce.com/services/Soap/u/49.0"/>
+		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="${sfdc.auth_url}"/>
 	</salesforce:sfdc-config>
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="70813923-f48d-453e-ac25-7014e060af25" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
@@ -97,6 +97,7 @@ output application/json
 			</ee:message>
 		</ee:transform>
 		<netsuite:add-record recordType="CREDIT_MEMO" doc:name="Add Credit Memo Record" doc:id="aee4458f-9013-46f9-b0f0-e45ed122f2a4" config-ref="NetSuite_Config" />
+		<logger level="INFO" doc:name="Logger" doc:id="2c1c32ae-03a2-45c2-9a42-3dce0f86fe29" message='#["Added Credit Memo Record in NetSuite"]'/>
 	</sub-flow>
 	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
 		<salesforce:query doc:name="Query Account Name in Salesforce" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
