@@ -62,6 +62,12 @@ payload]]></ee:set-payload>
 				<fixed-frequency frequency="${sfdc.polling_interval}"/>
 			</scheduling-strategy>
 		</salesforce:new-object-listener>
+		<ee:transform doc:name="Initialize variables" doc:id="6dc7a850-cb31-4d78-acbc-916846f16075">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="orderLineItemsList"><![CDATA[[]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<set-variable value="#[payload]" doc:name="Save FinanceTransaction payload" doc:id="4d4e9142-0586-41a9-9f30-ca0dfb774cec" variableName="finTranPayload" />
 		<choice doc:name="Choice" doc:id="1a3bf7fc-8bf5-4f23-b4b1-309e4b6d7572">
 			<when expression='#[vars.finTranPayload.ReferenceEntityType == "Invoice"]'>
