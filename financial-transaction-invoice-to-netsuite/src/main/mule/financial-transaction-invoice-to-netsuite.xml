@@ -73,10 +73,10 @@ payload]]></ee:set-payload>
 		</choice>
 	</flow>
 	<sub-flow name="prepare-and-create-NetSuite-Invoice" doc:id="c0084065-b22e-4697-93c5-8e81e1bdb725" >
+		<flow-ref doc:name="Lookup Accounting Period in NetSuite based on current date" doc:id="87945943-1d2c-4741-b269-acdcd55e76c5" name="lookup-accounting-period-in-netsuite-based-on-current-date" />
 		<flow-ref doc:name="Lookup NetSuite Customer ID from Salesforce Account ID" doc:id="d24050b3-71f6-4ac4-87b2-59ac4df09c82" name="lookup-customer-id-from-netsuite" />
 		<flow-ref doc:name="Lookup Inventory_Items in NetSuite for each Salesforce Order Item" doc:id="14f9b48e-2a4c-4445-b596-f52cffe20ff6" name="lookup-inventory-items-in-netsuite-based-on-salesforce-invoice" />
 		<set-variable value="#[now() as String {format: &quot;yyyy-MM-dd'T'hh:mm:ss&quot;}]" doc:name="Get current date and time" doc:id="42385d57-64a0-4326-9500-4974d6c5c061" variableName="currentDateTime" />
-		<flow-ref doc:name="Lookup Accounting Period in NetSuite based on current date" doc:id="87945943-1d2c-4741-b269-acdcd55e76c5" name="lookup-accounting-period-in-netsuite-based-on-current-date" />
 		<ee:transform doc:name="Prep payload for NetSuite" doc:id="b677ede3-adbf-4ba0-957c-28aaf38bd127">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
