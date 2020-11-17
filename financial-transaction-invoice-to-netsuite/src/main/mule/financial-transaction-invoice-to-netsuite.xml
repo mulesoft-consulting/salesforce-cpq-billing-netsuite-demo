@@ -105,6 +105,27 @@ output application/json
 		</ee:transform>
 		<netsuite:add-record recordType="INVOICE" doc:name="Add Invoice Record" doc:id="aee4458f-9013-46f9-b0f0-e45ed122f2a4" config-ref="NetSuite_Config" />
 	</sub-flow>
+	<sub-flow name="lookup-accounting-period-in-netsuite-based-on-current-date" doc:id="af8195df-413a-47e4-8163-a888b0dd5650">
+		<set-variable value='#[now() as String {format: "MMM yyyy"}]' doc:name="Get current date" doc:id="6992d61e-4d50-45cf-befb-2ade06722ae2" variableName="currentDate" />
+		<ee:transform doc:name="Prep payload for search" doc:id="bde5916c-5529-4181-b606-2540e1d5c160">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	periodName: {
+		operator: "IS",
+		searchValue: vars.currentDate
+	} as Object {
+		class : "com.mulesoft.connector.netsuite.extension.api.SearchStringField"
+	}
+} as Object {
+	class : "com.mulesoft.connector.netsuite.extension.api.AccountingPeriodSearchBasic"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<netsuite:search key="ACCOUNTING_PERIOD_BASIC" doc:name="Search for Accounting Period in NetSuite" doc:id="b5d349ac-cd9f-4e1a-8587-ffc25dff3ba2" config-ref="NetSuite_Config" pageSize="10" target="netsuiteAccountingPeriod" />
+	</sub-flow>
 	<sub-flow name="lookup-customer-id-from-netsuite" doc:id="b2465150-1761-4042-ba18-dc263617f520" >
 		<salesforce:query doc:name="Query Account Name in Salesforce" doc:id="0a70392f-e87f-4f9c-bedc-c87c244e335a" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT Name from Account WHERE Id = ':account_id']]></salesforce:salesforce-query>
@@ -143,7 +164,7 @@ output application/java
 }]]]></salesforce:parameters>
 		</salesforce:query>
 		<salesforce:query doc:name="Query InvoiceLines in Salesforce" doc:id="eb25074c-9b58-4064-a257-077e7b2c492c" config-ref="Salesforce_Config" target="lineItemsPayload">
-			<salesforce:salesforce-query ><![CDATA[SELECT blng__InvoiceLineStatus__c,blng__Notes__c,blng__Product__c,blng__Quantity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,blng__UniqueId__c,Id FROM blng__InvoiceLine__c WHERE blng__Invoice__c = ':invoice_id']]></salesforce:salesforce-query>
+			<salesforce:salesforce-query ><![CDATA[SELECT blng__InvoiceLineStatus__c,blng__Notes__c,blng__Product__c,blng__Quantity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,blng__UniqueId__c,Id,blng__UnitPrice__c FROM blng__InvoiceLine__c WHERE blng__Invoice__c = ':invoice_id']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
@@ -151,6 +172,8 @@ output application/java
 }]]]></salesforce:parameters>
 		</salesforce:query>
 		<foreach doc:name="For Each Line Item" doc:id="4c06f23b-6c16-4435-b89f-319b01b49521" collection="#[vars.lineItemsPayload]" rootMessageVariableName="orderItem">
+			<set-variable value="#[payload]" doc:name="Save Line Item Payload" doc:id="fb336f2a-4a88-43b4-af0b-9272f755a171" variableName="line_item_payload"/>
+			<set-variable value="#[payload.blng__Quantity__c]" doc:name="Get Quantity of Items in Invoice Line" doc:id="c9ac1b69-1cf2-48cb-949b-b351a9133c0c" variableName="invoice_line_quantity" />
 			<salesforce:query doc:name="Lookup Order Item Product Name &amp; Price" doc:id="b5c0b7f8-00bc-43c1-a8dc-997a400511f8" config-ref="Salesforce_Config" target="productPayload">
 				<salesforce:salesforce-query ><![CDATA[SELECT Name, UnitPrice FROM PricebookEntry where Product2Id = ':priceBookEntry_id']]></salesforce:salesforce-query>
 				<salesforce:parameters ><![CDATA[#[output application/java
@@ -159,7 +182,6 @@ output application/java
 	priceBookEntry_id : payload.blng__Product__c
 }]]]></salesforce:parameters>
 			</salesforce:query>
-			<set-variable value="#[payload.blng__Quantity__c]" doc:name="Get Quantity of Items in Invoice Line" doc:id="c9ac1b69-1cf2-48cb-949b-b351a9133c0c" variableName="invoice_line_quantity"/>
 			<ee:transform doc:name="Prep payload for search" doc:id="0bfa7a68-a254-4b15-8dc6-3bc7314d5d58">
 				<ee:message>
 					<ee:set-payload><![CDATA[%dw 2.0
@@ -198,12 +220,10 @@ vars.orderLineItemsList << {
           "internalId": vars.netsuiteInventoryItem[0].internalId,
           "name": vars.netsuiteInventoryItem[0].itemId
         },
-			price: {
-          "internalId": "1",
-          "name": "Base Price"
-        },
-			quantity: vars.invoice_line_quantity as Number
-		}]]></ee:set-variable>
+		quantity: vars.invoice_line_quantity as Number,
+		amount: vars.line_item_payload.blng__Subtotal__c as Number,
+		taxAmount: vars.line_item_payload.blng__TaxAmount__c as Number
+	}]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
 				</when>
@@ -213,26 +233,5 @@ vars.orderLineItemsList << {
 			</choice>
 			<logger level="INFO" doc:name="Log Activity" doc:id="8e0018b9-f99f-4c9a-a6a7-cfafa0fc9dfd" message='#["looking up inventory items from NetSuite"]' />
 		</foreach>
-	</sub-flow>
-	<sub-flow name="lookup-accounting-period-in-netsuite-based-on-current-date" doc:id="af8195df-413a-47e4-8163-a888b0dd5650" >
-		<set-variable value='#[now() as String {format: "MMM yyyy"}]' doc:name="Get current date" doc:id="6992d61e-4d50-45cf-befb-2ade06722ae2" variableName="currentDate"/>
-		<ee:transform doc:name="Prep payload for search" doc:id="bde5916c-5529-4181-b606-2540e1d5c160" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-{
-	periodName: {
-		operator: "IS",
-		searchValue: vars.currentDate
-	} as Object {
-		class : "com.mulesoft.connector.netsuite.extension.api.SearchStringField"
-	}
-} as Object {
-	class : "com.mulesoft.connector.netsuite.extension.api.AccountingPeriodSearchBasic"
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<netsuite:search key="ACCOUNTING_PERIOD_BASIC" doc:name="Search for Accounting Period in NetSuite" doc:id="b5d349ac-cd9f-4e1a-8587-ffc25dff3ba2" config-ref="NetSuite_Config" pageSize="10" target="netsuiteAccountingPeriod" />
 	</sub-flow>
 </mule>
