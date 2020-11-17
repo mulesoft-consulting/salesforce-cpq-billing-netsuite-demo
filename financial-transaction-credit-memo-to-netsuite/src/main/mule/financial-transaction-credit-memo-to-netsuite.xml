@@ -152,6 +152,7 @@ output application/java
 }]]]></salesforce:parameters>
 		</salesforce:query>
 		<foreach doc:name="For Each Credit Note Line Item" doc:id="4c06f23b-6c16-4435-b89f-319b01b49521" collection="#[vars.lineItemsPayload]" rootMessageVariableName="orderItem">
+			<set-variable value="#[payload]" doc:name="Save Credit Note Line Payload" doc:id="b0427b97-f956-4037-9e02-bb18c53600e1" variableName="credit_note_line_payload" />
 			<salesforce:query doc:name="Lookup Credit Note Item Product Name &amp; Price" doc:id="b5c0b7f8-00bc-43c1-a8dc-997a400511f8" config-ref="Salesforce_Config" target="productPayload">
 				<salesforce:salesforce-query ><![CDATA[SELECT Name, UnitPrice FROM PricebookEntry where Product2Id = ':priceBookEntry_id']]></salesforce:salesforce-query>
 				<salesforce:parameters ><![CDATA[#[output application/java
@@ -160,7 +161,6 @@ output application/java
 	priceBookEntry_id : payload.blng__Product__c
 }]]]></salesforce:parameters>
 			</salesforce:query>
-			<set-variable value="#[payload.blng__Quantity__c]" doc:name="Get Quantity of Items in Credit Note Line" doc:id="c9ac1b69-1cf2-48cb-949b-b351a9133c0c" variableName="credit_line_quantity"/>
 			<ee:transform doc:name="Prep payload for search" doc:id="0bfa7a68-a254-4b15-8dc6-3bc7314d5d58">
 				<ee:message>
 					<ee:set-payload><![CDATA[%dw 2.0
@@ -195,16 +195,14 @@ output application/java
 output application/json
 ---
 vars.orderLineItemsList << {
-		item: {
+	item: {
           "internalId": vars.netsuiteInventoryItem[0].internalId,
           "name": vars.netsuiteInventoryItem[0].itemId
         },
-			price: {
-          "internalId": "1",
-          "name": "Base Price"
-        },
-			quantity: 1
-		}]]></ee:set-variable>
+		amount: vars.credit_note_line_payload.blng__Subtotal__c as Number,
+		taxAmount: vars.credit_note_line_payload.blng__TaxAmount__c as Number,
+		tax1Amt: vars.credit_note_line_payload.blng__TaxAmount__c as Number
+	}]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
 				</when>
