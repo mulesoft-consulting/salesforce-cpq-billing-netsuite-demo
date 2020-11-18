@@ -193,15 +193,15 @@ output application/java
 				<ee:variables>
 							<ee:set-variable variableName="orderLineItemsList" ><![CDATA[%dw 2.0
 output application/json
+type BigDecimal = Number {class : "java.math.BigDecimal"}
 ---
 vars.orderLineItemsList << {
 	item: {
           "internalId": vars.netsuiteInventoryItem[0].internalId,
           "name": vars.netsuiteInventoryItem[0].itemId
         },
-		amount: vars.credit_note_line_payload.blng__Subtotal__c as Number,
-		taxAmount: vars.credit_note_line_payload.blng__TaxAmount__c as Number,
-		tax1Amt: vars.credit_note_line_payload.blng__TaxAmount__c as Number
+		amount: vars.credit_note_line_payload.blng__Subtotal__c as BigDecimal,
+		taxAmount: vars.credit_note_line_payload.blng__TaxAmount__c as BigDecimal
 	}]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
