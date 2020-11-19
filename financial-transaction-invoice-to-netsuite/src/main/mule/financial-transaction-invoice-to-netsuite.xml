@@ -53,6 +53,19 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<flow name="financial-transaction-invoice-to-netsuiteFlow" doc:id="c2940146-e715-4eeb-9a8d-da3bdd14b0db" >
+		<http:listener doc:name="Listener" doc:id="2cce9f27-0c96-426b-9258-664e6960d169" config-ref="HTTP_Listener_config" path="/test"/>
+		<set-variable value='#[attributes.queryParams."internal_id"]' doc:name="Get Internal ID Query Param" doc:id="fe2a554b-7441-4f87-bb81-66da261b5938" variableName="internal_id"/>
+		<netsuite:get-record recordType="INVOICE" doc:name="Get record" doc:id="90807e67-e684-4645-90ce-c217db7b53bc" config-ref="NetSuite_Config" internalId="#[vars.internal_id]"/>
+		<ee:transform doc:name="Transform Message" doc:id="961161d8-507e-432a-8c30-3b6a82f5f8f8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="financial-logging-to-NetSuite-Invoice-Event-Flow" doc:id="5d767d36-e5e6-4168-a008-7e7d8cd3d01c">
 		<salesforce:new-object-listener doc:name="On New Finance Transaction Object" doc:id="8c2ac798-eff2-49c3-bd6f-60458465b0af" config-ref="Salesforce_Config" objectType="FinanceTransaction">
 			<scheduling-strategy>
@@ -77,6 +90,16 @@ payload]]></ee:set-payload>
 		<flow-ref doc:name="Lookup NetSuite Customer ID from Salesforce Account ID" doc:id="d24050b3-71f6-4ac4-87b2-59ac4df09c82" name="lookup-customer-id-from-netsuite" />
 		<flow-ref doc:name="Lookup Inventory_Items in NetSuite for each Salesforce Order Item" doc:id="14f9b48e-2a4c-4445-b596-f52cffe20ff6" name="lookup-inventory-items-in-netsuite-based-on-salesforce-invoice" />
 		<set-variable value="#[now() as String {format: &quot;yyyy-MM-dd'T'hh:mm:ss&quot;}]" doc:name="Get current date and time" doc:id="42385d57-64a0-4326-9500-4974d6c5c061" variableName="currentDateTime" />
+		<ee:transform doc:name="Calculate tax rate" doc:id="a13143f0-4c9b-4da1-b9b6-eda222d005c3" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="taxRate" ><![CDATA[%dw 2.0
+output application/java
+---
+(vars.invoiceDetailsPayload[0].blng__TaxAmount__c / vars.invoiceDetailsPayload[0].blng__Subtotal__c) * 100]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<ee:transform doc:name="Prep payload for NetSuite" doc:id="b677ede3-adbf-4ba0-957c-28aaf38bd127">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -99,7 +122,9 @@ output application/json
 		"internalId": vars.netsuiteAccountingPeriod[0].internalId,
 		"name": vars.netsuiteAccountingPeriod[0].periodName
 	},
-	tranDate: vars.currentDateTime
+	tranDate: vars.currentDateTime,
+	taxRate: vars.taxRate,
+	taxTotal: vars.invoiceDetailsPayload[0].blng__TaxAmount__c
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

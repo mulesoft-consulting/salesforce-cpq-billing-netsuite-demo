@@ -25,7 +25,20 @@ type invoice_object = {|
 
 ]]></types:shape>
     </types:type>
+    <types:type name="double" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
   </types:catalog>
   <types:enrichment select="#4b6e38d6-56a1-4011-aa25-f7d581adea5c"/>
   <types:enrichment select="#e4be89b5-b356-4a7a-af88-d0d2085989e5"/>
+  <types:enrichment select="#a13143f0-4c9b-4da1-b9b6-eda222d005c3">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="taxRate" type="double"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
 </types:mule>
