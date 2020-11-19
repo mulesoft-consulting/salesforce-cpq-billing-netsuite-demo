@@ -81,6 +81,15 @@ payload]]></ee:set-payload>
 		<flow-ref doc:name="Lookup Credit Line in NetSuite for each Salesforce Credit Note Line" doc:id="14f9b48e-2a4c-4445-b596-f52cffe20ff6" name="lookup-inventory-items-in-netsuite-based-on-salesforce-credit-note-line" />
 		<set-variable value="#[now() as String {format: &quot;yyyy-MM-dd'T'hh:mm:ss&quot;}]" doc:name="Get current date and time" doc:id="42385d57-64a0-4326-9500-4974d6c5c061" variableName="currentDateTime" />
 		<flow-ref doc:name="Lookup Accounting Period in NetSuite based on current date" doc:id="87945943-1d2c-4741-b269-acdcd55e76c5" name="lookup-accounting-period-in-netsuite-based-on-current-date" />
+		<ee:transform doc:name="Calculate tax rate" doc:id="804ece1f-d7cf-4bea-8b1b-d28f660bb1bd">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="taxRate"><![CDATA[%dw 2.0
+output application/java
+---
+(vars.creditNoteDetailsPayload[0].blng__TaxAmount__c / vars.creditNoteDetailsPayload[0].blng__Subtotal__c) * 100]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<ee:transform doc:name="Prep payload for NetSuite" doc:id="b677ede3-adbf-4ba0-957c-28aaf38bd127">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -99,7 +108,8 @@ output application/json
 		"internalId": vars.netsuiteAccountingPeriod[0].internalId,
 		"name": vars.netsuiteAccountingPeriod[0].periodName
 	},
-	tranDate: vars.currentDateTime
+	tranDate: vars.currentDateTime,
+	taxRate: vars.taxRate
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
