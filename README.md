@@ -13,4 +13,13 @@ The purpose of this repository is to help Salesforce CPQ and Billing customers g
 ![Overview](images/Salesforce_FinTran_to_NetSuite.gif)
 
 ## Here is a description of the MuleSoft projects included in this repository:
+### credit-note-to-finance-transaction
+Description goes here
+
+### financial-logging-billing
+Description goes here
+
+### financial-transaction-credit-memo-to-netsuite
+Description goes here
+
 ### 
