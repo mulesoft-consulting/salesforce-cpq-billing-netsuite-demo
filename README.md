@@ -22,4 +22,16 @@ Description goes here
 ### 3. financial-transaction-credit-memo-to-netsuite
 Description goes here
 
-### 4. 
+### 4. financial-transaction-invoice-to-netsuite
+Description goes here
+
+### 5. financial-transaction-payments-to-netsuite
+Description goes here
+
+### 6. invoice-to-financial-transaction
+Description goes here
+
+### 7. payment-to-financial-transaction
+Description goes here
+
+### 8. salesforce-cpq-netsuite-gartner
