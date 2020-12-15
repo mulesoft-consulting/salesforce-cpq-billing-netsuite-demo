@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9fba2de0-0a33-4634-b061-0330855dd12c" >
-		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="https://db000000061wgmaq.my.salesforce.com/services/Soap/u/49.0"/>
+		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="${sfdc.auth_url}"/>
 	</salesforce:sfdc-config>
 	<global-property doc:name="Global Property" doc:id="ad80ce27-fe15-4fda-8f1d-dd945a2cfaa2" name="encryption.key" value="mulesoft_password" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="6fb9037c-9850-4524-a10d-c5ddbe896d48" file="config/config-secure.yaml" key="${encryption.key}">
