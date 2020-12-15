@@ -53,19 +53,6 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="financial-transaction-invoice-to-netsuiteFlow" doc:id="c2940146-e715-4eeb-9a8d-da3bdd14b0db" >
-		<http:listener doc:name="Listener" doc:id="2cce9f27-0c96-426b-9258-664e6960d169" config-ref="HTTP_Listener_config" path="/test"/>
-		<set-variable value='#[attributes.queryParams."internal_id"]' doc:name="Get Internal ID Query Param" doc:id="fe2a554b-7441-4f87-bb81-66da261b5938" variableName="internal_id"/>
-		<netsuite:get-record recordType="INVOICE" doc:name="Get record" doc:id="90807e67-e684-4645-90ce-c217db7b53bc" config-ref="NetSuite_Config" internalId="#[vars.internal_id]"/>
-		<ee:transform doc:name="Transform Message" doc:id="961161d8-507e-432a-8c30-3b6a82f5f8f8" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</flow>
 	<flow name="financial-logging-to-NetSuite-Invoice-Event-Flow" doc:id="5d767d36-e5e6-4168-a008-7e7d8cd3d01c">
 		<salesforce:new-object-listener doc:name="On New Finance Transaction Object" doc:id="8c2ac798-eff2-49c3-bd6f-60458465b0af" config-ref="Salesforce_Config" objectType="FinanceTransaction">
 			<scheduling-strategy>
