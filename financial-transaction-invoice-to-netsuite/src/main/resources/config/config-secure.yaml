@@ -8,21 +8,7 @@ ns:
   applicationId: "![5caWhKEg5KJ8P1NB8C/mjJLQPgoMwEj6y75wEDBMfOe+Ve1cyp5CYA==]"
   roleId: "![k8EFiouhuU0=]"
   
-# These are the details for demo2 user:
-#  account: "![uc7rDe+qWXL9WTWI7s7UZQ==]"
-#  user: "![lxWjplAmlchvNUfsF8ckkhb89pt0Xi8QO1tn14oTJEp+qg/FC+NbBw==]"
-#  pass: "![SO1TkXFpCbB0sSdu1RC+8cAWACEyP66T]"
-#  applicationId: "![CW+ImiiD4lZgYjOsXABkBeWbkAKdouiH4q+/u6+kN4+1uH3qRMt9bA==]"
-#  roleId: "![tyjtYvZSIAA=]"
-  
-# Salesforce properties - GA version sandbox:
-#sfdc:
-#  user: "![d5HIVDGMXBKa0wP9bR1YZdqW0+Fc2YuCFUj6ElHVKwM=]"
-#  password: "![oyZUKMW5wRP1bnQs771vys5KSABMcFgq]"
-#  token: "![kKbxa4y10ztIBjJGtLfvDLCi9dBo6swBpcYIAnEQsvI=]"
-  
 # Salesforce properties - 228 GA version sandbox:
 sfdc:
-  user: "![d5HIVDGMXBKa0wP9bR1YZdqW0+Fc2YuCFUj6ElHVKwM=]"
-  password: "![oyZUKMW5wRP1bnQs771vys5KSABMcFgq]"
-  token: "![kKbxa4y10ztIBjJGtLfvDLCi9dBo6swBpcYIAnEQsvI=]"
+  user: "![d5HIVDGMXBLihFkkLN0dPXoJi5RKdhCDl2pqTMBL/8kolqvk6B4ZBw==]"
+  password: "![+QY0A0BpGB14KeFKpq8z1A==]"

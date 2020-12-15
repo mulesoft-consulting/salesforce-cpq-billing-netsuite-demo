@@ -6,3 +6,4 @@ ns:
 # polling interval is in milliseconds
 sfdc:
   polling_interval: "5000"
+  auth_url: "https://db000000061wgmaq.my.salesforce.com/services/Soap/u/49.0"
