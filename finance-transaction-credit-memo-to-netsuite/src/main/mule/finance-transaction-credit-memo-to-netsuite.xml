@@ -76,6 +76,40 @@ payload]]></ee:set-payload>
 			</when>
 		</choice>
 	</flow>
+	<flow name="financial-transaction-credit-memo-to-netsuiteFlow" doc:id="a5b82329-bd46-45ea-a1f1-3cc7a6e1199b" >
+		<http:listener doc:name="Listener" doc:id="09771718-f261-4807-a730-916d2b1df5d6" config-ref="HTTP_Listener_config" path="/test2"/>
+		<ee:transform doc:name="Transform Message" doc:id="f5b85deb-6f97-4693-ae53-98976b000134" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	basic: {
+		"acctType": {
+			operator: "ANY_OF",
+			searchValue: ["Credit Card", "Bank", "Other Current Asset", "Fixed Asset", "Non Posting"]
+		} as Object {
+			class : "com.mulesoft.connector.netsuite.extension.api.SearchEnumMultiSelectField"
+		}
+	} as Object {
+		class : "com.mulesoft.connector.netsuite.extension.api.AccountSearchBasic"
+	},
+} as Object {
+	class : "com.mulesoft.connector.netsuite.extension.api.AccountSearch"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<netsuite:search key="ACCOUNT" doc:name="Search" doc:id="a5ded7ce-6d98-4a71-bdcc-87309593667f" config-ref="NetSuite_Config" pageSize="10"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b186ff30-d620-4164-a0af-d35c0da5494c" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="f8186c53-9863-4996-b4a4-9c8d2be13677" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<sub-flow name="prepare-and-create-NetSuite-Credit-Memo" doc:id="c0084065-b22e-4697-93c5-8e81e1bdb725" >
 		<flow-ref doc:name="Lookup NetSuite Customer ID from Salesforce Account ID" doc:id="d24050b3-71f6-4ac4-87b2-59ac4df09c82" name="lookup-customer-id-from-netsuite" />
 		<flow-ref doc:name="Lookup Credit Line in NetSuite for each Salesforce Credit Note Line" doc:id="14f9b48e-2a4c-4445-b596-f52cffe20ff6" name="lookup-inventory-items-in-netsuite-based-on-salesforce-credit-note-line" />
