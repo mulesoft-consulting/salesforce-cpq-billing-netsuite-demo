@@ -36,5 +36,10 @@ This project will be triggered whenever a new FinanceTransaction record of refer
 #### credit-note-to-finance-transaction
 This project will be triggered when Credit Notes are “Posted” in Salesforce Billing.  When this happens, a set of new  FinanceTransactions will be created: One for the posted Credit Note (with a reference entity type of “Credit memo”), plus additional FinanceTransactions for each of the Credit Note Lines (with a reference entity type of “Credit memo line”) within the Credit Note.
 
-#### financial-transaction-credit-memo-to-netsuite
-Description goes here
+#### finance-transaction-credit-memo-to-netsuite
+This project will be triggered whenever a new FinanceTransaction record of reference entity type “Credit memo” is created.  It will then create a corresponding Credit Memo in NetSuite based on the Salesforce Billing Credit Note along with it’s associated Credit Note Lines based on the products available in the NetSuite product catalog (Inventory Items as they are called in NetSuite), NetSuite accounting period, and tax rate.
+
+**Note:**
+The products corresponding to the credit note lines need to be available available in the NetSuite product catalog (Inventory Items as they are called in NetSuite). Otherwise, the Credit Memo creation will fail.
+The account related to the Credit Note needs to be present in NetSuite for successful Credit Memo creation.
+
