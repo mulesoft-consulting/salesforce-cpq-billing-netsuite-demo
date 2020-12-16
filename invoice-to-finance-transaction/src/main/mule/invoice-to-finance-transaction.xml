@@ -8,7 +8,11 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="2d223b3b-1595-4e7c-9bac-e706ddde8900" >
-		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="${sfdc.auth_url}"/>
+		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="${sfdc.auth_url}">
+			<reconnection >
+				<reconnect count="5" />
+			</reconnection>
+		</salesforce:basic-connection>
 	</salesforce:sfdc-config>
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="d62bdadb-0ab0-4be3-9063-d5a729184e72" file="config/config-secure.yaml" key="${encryption.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />

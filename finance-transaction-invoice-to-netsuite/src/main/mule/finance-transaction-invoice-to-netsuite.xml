@@ -9,7 +9,11 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/netsuite http://www.mulesoft.org/schema/mule/netsuite/current/mule-netsuite.xsd
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9603a090-63b6-4c24-9e11-d1b306b7b508" >
-		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="${sfdc.auth_url}"/>
+		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="${sfdc.auth_url}">
+			<reconnection >
+				<reconnect count="5" />
+			</reconnection>
+		</salesforce:basic-connection>
 	</salesforce:sfdc-config>
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="70813923-f48d-453e-ac25-7014e060af25" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
