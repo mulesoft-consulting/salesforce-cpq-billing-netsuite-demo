@@ -88,7 +88,8 @@ output application/java
 	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
 	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c,
 	ImpactAmount: payload.blng__ImpactAmount__c,
-	LegalEntityId: payload.blng__LegalEntity__c
+	LegalEntityId: payload.blng__LegalEntity__c,
+	ParentReferenceEntityId: vars.invoicePayload.Id
 }]]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
