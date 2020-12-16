@@ -38,8 +38,3 @@ This project will be triggered when Credit Notes are “Posted” in Salesforce 
 
 #### financial-transaction-credit-memo-to-netsuite
 Description goes here
-
-### Other projects:
-#### salesforce-cpq-netsuite-gartner
-
-## How to get access to these projects
