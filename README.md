@@ -5,6 +5,8 @@ The purpose of this repository is to help Salesforce CPQ and Billing customers g
 * Salesforce Billing objects (Invoice, Credit Note, Payments) to Salesforce Finance Transactions
 * Salesforce Finance Transactions to NetSuite
 
+[Read more about Finance Transactions in Salesforce Billing](https://help.salesforce.com/articleView?id=blng_finance_logging_intro.htm&type=5)
+
 ## Scenarios supported by these MuleSoft projects:
 1. Post Invoices w/ Lines from Salesforce Billing (including taxes)
 2. Post Standalone Payments against an Account
