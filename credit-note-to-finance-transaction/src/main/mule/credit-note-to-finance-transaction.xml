@@ -55,7 +55,7 @@ output application/java
 					</ee:message>
 				</ee:transform>
 				<salesforce:create type="FinanceTransaction" doc:id="95f14b00-edca-4c88-b712-094b9c646a16" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Credit Note" />
-				<logger level="INFO" doc:name="Log result" doc:id="cb3646bc-a118-4826-8fed-ab84865d238a" message="#[payload]" />
+				<logger level="INFO" doc:name="Log success or fail" doc:id="d85ae512-0413-4869-8634-bb93b0e00c62" message='#[if (payload.successful == true) "Successfully added Credit Note Finance Transaction Record" else "Error adding Financial Transaction Record"]' />
 				<salesforce:query doc:id="0db71a86-9985-4314-98fd-6b997f4eb553" config-ref="Salesforce_Config" doc:name="Query Credit Note Line Information" >
 					<salesforce:salesforce-query ><![CDATA[SELECT Id,blng__CreditNote__c,blng__BaseCurrencyFXDate__c,blng__BaseCurrencyFXRate__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__ImpactAmount__c,blng__LegalEntity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,CurrencyIsoCode FROM blng__CreditNoteLine__c WHERE blng__CreditNote__c= ':creditnote_id' ]]></salesforce:salesforce-query>
 					<salesforce:parameters ><![CDATA[#[output application/java
@@ -64,8 +64,8 @@ output application/java
 	creditnote_id : vars.creditNotePayload.Id
 }]]]></salesforce:parameters>
 				</salesforce:query>
-				<logger level="INFO" doc:name="Logger" doc:id="303ce94d-4676-42de-b19c-5394d8e9a59a" message="#[payload]" />
 				<foreach doc:name="For Each" doc:id="14f8484d-cdb7-4999-9683-9cc5ffa9d10f" >
+					<set-variable value="#[payload]" doc:name="Save Credit Note Line Info" doc:id="cedcef8d-6c14-4006-aff6-0473cff629a1" variableName="creditNoteLineInfo"/>
 					<ee:transform doc:name="Prep Payload to Create Financial Transaction for Credit Note Line" doc:id="12781c0f-769a-44a6-968b-f2cd4427f1e7" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
@@ -73,33 +73,70 @@ output application/java
 ---
 [{
 	AccountId: vars.creditNotePayload.blng__Account__c,
-	CurrencyIsoCode: payload.CurrencyIsoCode,
-	ReferenceEntityId: payload.Id,
+	CurrencyIsoCode: vars.creditNoteLineInfo.CurrencyIsoCode,
+	ReferenceEntityId: vars.creditNoteLineInfo.Id,
 	ReferenceEntityType: "Credit memo line",
 	EventAction: "Issue a standalone credit",
 	EventType: "Posted",
-	Subtotal: payload.blng__Subtotal__c,
-	TaxAmount: payload.blng__TaxAmount__c,
-	TotalAmountWithTax: payload.blng__TotalAmount__c,
-	ResultingBalance: payload.blng__Balance__c,
-	TransactionDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
-	EffectiveDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
-	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
-	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
-	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
-	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c,
-	ImpactAmount: payload.blng__ImpactAmount__c,
-	LegalEntityId: payload.blng__LegalEntity__c,
+	Subtotal: vars.creditNoteLineInfo.blng__Subtotal__c,
+	TaxAmount: vars.creditNoteLineInfo.blng__TaxAmount__c,
+	TotalAmountWithTax: vars.creditNoteLineInfo.blng__TotalAmount__c,
+	ResultingBalance: vars.creditNoteLineInfo.blng__Balance__c,
+	TransactionDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
+	EffectiveDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
+	BaseCurrencyFxRate: vars.creditNoteLineInfo.blng__BaseCurrencyFXRate__c,
+	BaseCurrencyFxDate: vars.creditNoteLineInfo.blng__BaseCurrencyFXDate__c,
+	BaseCurrencyAmount: vars.creditNoteLineInfo.blng__BaseCurrencyAmount__c,
+	BaseCurrencyIsoCode: vars.creditNoteLineInfo.blng__BaseCurrency__c,
+	ImpactAmount: vars.creditNoteLineInfo.blng__ImpactAmount__c,
+	LegalEntityId: vars.creditNoteLineInfo.blng__LegalEntity__c,
 	ParentReferenceEntityId: vars.creditNotePayload.Id
 }]]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
-					<salesforce:create type="FinanceTransaction" doc:id="650a07c5-146e-43fc-991f-84966e6bf612" config-ref="Salesforce_Config" doc:name="Create Financial Transaction for Credit Note Line" />
-					<logger level="INFO" doc:name="Log success or fail" doc:id="518ca7c3-bd69-46b1-b118-786d87a74491" message='#[if (payload.successful == true) "Successfully added Financial Transaction Record" else "Error adding Financial Transaction Record"]' />
+					<salesforce:create type="FinanceTransaction" doc:id="650a07c5-146e-43fc-991f-84966e6bf612" config-ref="Salesforce_Config" doc:name="Create Financial Transaction for Credit Note Line" target="createFinTranCreditNoteLineOutputPayload"/>
+					<logger level="INFO" doc:name="Log success or fail" doc:id="518ca7c3-bd69-46b1-b118-786d87a74491" message='#[if (vars.createFinTranCreditNoteLineOutputPayload.successful == true) "Successfully added Credit Note Line Financial Transaction Record" else "Error adding Financial Transaction Record"]' />
+					<choice doc:name="Create Credit Line Tax if Tax &gt; 0" doc:id="12ab831d-a42b-46f5-a251-07f2f0a1a09f" >
+						<when expression="#[vars.creditNoteLineInfo.blng__TaxAmount__c &gt; 0]">
+							<ee:transform doc:name="Transform Message" doc:id="a13e876c-b381-4c16-b44c-572eb8c539c2">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	AccountId: vars.creditNotePayload.blng__Account__c,
+	CurrencyIsoCode: vars.creditNoteLineInfo.CurrencyIsoCode,
+	ReferenceEntityId: vars.creditNoteLineInfo.Id,
+	ReferenceEntityType: "Credit Memo Line Tax",
+	EventAction: "Issue a standalone credit",
+	EventType: "Posted",
+	TaxAmount: vars.creditNoteLineInfo.blng__TaxAmount__c,
+	TotalAmountWithTax: vars.creditNoteLineInfo.blng__TotalAmount__c,
+	TransactionDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
+	EffectiveDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
+	BaseCurrencyFxRate: vars.creditNoteLineInfo.blng__BaseCurrencyFXRate__c,
+	BaseCurrencyFxDate: vars.creditNoteLineInfo.blng__BaseCurrencyFXDate__c,
+	BaseCurrencyIsoCode: vars.creditNoteLineInfo.blng__BaseCurrency__c,
+	ImpactAmount: vars.creditNoteLineInfo.blng__TaxAmount__c,
+	LegalEntityId: vars.creditNoteLineInfo.blng__LegalEntity__c,
+	ParentReferenceEntityId: vars.createFinTranCreditNoteLineOutputPayload.id
+}]]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+							<salesforce:create type="FinanceTransaction" doc:name="Create Financial Transaction for Credit Note Tax" doc:id="5cc62b69-742a-459b-819b-2a4dd8af47c3" config-ref="Salesforce_Config" />
+							<logger level="INFO" doc:name="Log success or fail" doc:id="03c5c338-9457-452e-9db2-8dc9c0e47da1" message='#[if (payload.successful == true) "Successfully added Credit Note Tax Financial Transaction Record" else "Error adding Financial Transaction Record"]' />
+						</when>
+					</choice>
 				</foreach>
 			</when>
 		</choice>
-		<set-variable value="" doc:name="Credit Note Line Query Results" doc:id="e52ddc2a-1560-43e1-8e8e-f91664479e4c" variableName=" invoiceLineQueryResults" />
-		<logger level="INFO" doc:name="Logger" doc:id="a3d24ca1-5aa5-4981-9a98-3e3a607ffb52" message="Got to here " />
 	</flow>
 </mule>
