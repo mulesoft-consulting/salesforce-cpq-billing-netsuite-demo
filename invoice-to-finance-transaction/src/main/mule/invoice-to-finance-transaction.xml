@@ -124,7 +124,7 @@ output application/java
 	BaseCurrencyIsoCode: vars.invoiceLineInfo.blng__BaseCurrency__c,
 	ImpactAmount: vars.invoiceLineInfo.blng__TaxAmount__c,
 	LegalEntityId: vars.invoiceLineInfo.blng__LegalEntity__c,
-	ParentReferenceEntityId: vars.createFinTranInvoiceLineOutputPayload.id
+	ParentReferenceEntityId: vars.invoicePayload.Id
 }]]]></ee:set-payload>
 								</ee:message>
 							</ee:transform>
