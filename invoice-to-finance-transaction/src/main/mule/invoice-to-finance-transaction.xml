@@ -55,8 +55,8 @@ output application/java
 ]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<salesforce:create type="FinanceTransaction" doc:id="be2b86a1-8dec-407c-9272-b23e2c5be5e7" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Invoice" />
-				<logger level="INFO" doc:name="Log success or fail" doc:id="c2460dc2-3311-403a-929e-8cb250458450" message="#[payload]" />
+				<salesforce:create type="FinanceTransaction" doc:id="be2b86a1-8dec-407c-9272-b23e2c5be5e7" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Invoice" target="createFinTranInvoiceOutputPayload"/>
+				<logger level="INFO" doc:name="Log success or fail" doc:id="090062ac-09b5-4e75-9733-b0a935d55bf8" message='#[if (vars.createFinTranInvoiceOutputPayload.successful == true) "Successfully added Invoice Line Finance Transaction Record" else "Error adding Finance Transaction Record"]' />
 				<salesforce:query doc:id="1e78fede-251d-4c75-8bab-cc85cbe48a72" config-ref="Salesforce_Config" doc:name="Query Invoice Line Information" >
 					<salesforce:salesforce-query ><![CDATA[SELECT Id,blng__Invoice__c,blng__BaseCurrencyFXDate__c,blng__BaseCurrencyFXRate__c,blng__Balance__c,blng__BaseCurrencyAmount__c,blng__DueDate__c,blng__ImpactAmount__c,blng__LegalEntity__c,blng__Subtotal__c,blng__TaxAmount__c,blng__TotalAmount__c,CurrencyIsoCode FROM blng__InvoiceLine__c WHERE blng__Invoice__c = ':invoice_id' ]]></salesforce:salesforce-query>
 					<salesforce:parameters ><![CDATA[#[output application/java
@@ -65,7 +65,6 @@ output application/java
 	invoice_id : vars.invoicePayload.Id
 }]]]></salesforce:parameters>
 				</salesforce:query>
-				<logger level="INFO" doc:name="Logger" doc:id="3fffac50-6b39-4c9c-9940-ca8d4b93ddff" message="#[payload]" />
 				<foreach doc:name="For Each" doc:id="3b4043f3-2466-4311-8827-92b723b8a214" >
 					<set-variable value="#[payload]" doc:name="invoiceLineInfo" doc:id="2f81b089-889d-4efd-8458-fd20ff3e1846" variableName="invoiceLineInfo"/>
 					<ee:transform doc:name="Prep Payload to Create Finance Transaction for Invoice Line" doc:id="e0300b76-4783-4179-9307-f5812f044766" >
