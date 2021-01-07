@@ -67,6 +67,7 @@ output application/java
 				</salesforce:query>
 				<logger level="INFO" doc:name="Logger" doc:id="3fffac50-6b39-4c9c-9940-ca8d4b93ddff" message="#[payload]" />
 				<foreach doc:name="For Each" doc:id="3b4043f3-2466-4311-8827-92b723b8a214" >
+					<set-variable value="" doc:name="invoiceLineInfo" doc:id="2f81b089-889d-4efd-8458-fd20ff3e1846" variableName="invoiceLineInfo"/>
 					<ee:transform doc:name="Prep Payload to Create Finance Transaction for Invoice Line" doc:id="e0300b76-4783-4179-9307-f5812f044766" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
@@ -96,8 +97,43 @@ output application/java
 }]]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
-					<salesforce:create type="FinanceTransaction" doc:id="41535d4c-eb4c-44d7-8b75-8779ae1c2dee" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Invoice Line" />
+					<salesforce:create type="FinanceTransaction" doc:id="41535d4c-eb4c-44d7-8b75-8779ae1c2dee" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Invoice Line" target="createFinTranInvoiceLineOutputPayload"/>
 					<logger level="INFO" doc:name="Log success or fail" doc:id="62389722-2448-47d5-9a40-6cff7ff55cb9" message='#[if (payload.successful == true) "Successfully added Finance Transaction Record" else "Error adding Finance Transaction Record"]' />
+					<choice doc:name="Create Invoice Line Tax if Tax &gt; 0" doc:id="4170b2da-7a88-4a8f-b567-5e92daa52507" >
+						<when expression="#[vars.invoicePayload.blng__TaxAmount__c &gt; 0]" >
+							<ee:transform doc:name="Transform Message" doc:id="3c309268-7433-41aa-bec2-686f051654c6" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	AccountId: vars.invoicePayload.blng__Account__c,
+	CurrencyIsoCode: vars.invoiceLineInfo.CurrencyIsoCode,
+	ReferenceEntityId: vars.invoiceLineInfo.Id,
+	ReferenceEntityType: "Invoice Line Tax",
+	EventAction: "Post an invoice",
+	EventType: "Posted",
+	TaxAmount: vars.invoiceLineInfo.blng__TaxAmount__c,
+	TotalAmountWithTax: vars.invoiceLineInfo.blng__TotalAmount__c,
+	TransactionDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
+	EffectiveDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
+	BaseCurrencyFxRate: vars.invoiceLineInfo.blng__BaseCurrencyFXRate__c,
+	BaseCurrencyFxDate: vars.invoiceLineInfo.blng__BaseCurrencyFXDate__c,
+	BaseCurrencyIsoCode: vars.invoiceLineInfo.blng__BaseCurrency__c,
+	ImpactAmount: vars.invoiceLineInfo.blng__TaxAmount__c,
+	LegalEntityId: vars.invoiceLineInfo.blng__LegalEntity__c,
+	ParentReferenceEntityId: vars.createFinTranInvoiceLineOutputPayload.id
+}]]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+							<salesforce:create type="FinanceTransaction" doc:name="Create Financial Transaction for Invoice Line Tax" doc:id="d6d9b405-9750-4e35-89a8-752574bc2026" config-ref="Salesforce_Config" />
+							<logger level="INFO" doc:name="Log success or fail" doc:id="b889affa-d7c8-41cd-95bb-80a8cb398891" message='#[if (payload.successful == true) "Successfully added Credit Note Tax Financial Transaction Record" else "Error adding Financial Transaction Record"]' />
+						</when>
+					</choice>
 				</foreach>
 			</when>
 		</choice>
