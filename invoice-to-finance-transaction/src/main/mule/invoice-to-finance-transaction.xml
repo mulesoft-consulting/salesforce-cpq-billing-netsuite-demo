@@ -113,7 +113,6 @@ output application/java
 	EventAction: "Post an invoice",
 	EventType: "Posted",
 	TaxAmount: vars.invoiceLineInfo.blng__TaxAmount__c,
-	TotalAmountWithTax: vars.invoiceLineInfo.blng__TotalAmount__c,
 	TransactionDate: now() as DateTime {
 		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
 	},
