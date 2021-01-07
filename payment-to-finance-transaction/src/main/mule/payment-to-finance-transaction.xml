@@ -41,11 +41,16 @@ output application/java
 	TotalAmountWithTax: payload.blng__Amount__c,
 	ResultingBalance: payload.blng__Balance__c,
 	AccountId: payload.blng__Account__c,
-	TransactionDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
-	EffectiveDate: now() as DateTime {format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"},
+	TransactionDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
+	EffectiveDate: now() as DateTime {
+		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
+	},
 	BaseCurrencyFxRate: payload.blng__BaseCurrencyFXRate__c,
 	BaseCurrencyFxDate: payload.blng__BaseCurrencyFXDate__c,
 	BaseCurrencyAmount: payload.blng__BaseCurrencyAmount__c,
+	LegalEntityId: payload.blng__LegalEntity__c,
 	BaseCurrencyIsoCode: payload.blng__BaseCurrency__c,
 	ImpactAmount: payload.blng__ImpactAmount__c
 }]
