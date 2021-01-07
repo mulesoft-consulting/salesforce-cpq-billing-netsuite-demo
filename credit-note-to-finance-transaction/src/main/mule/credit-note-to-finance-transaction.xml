@@ -98,7 +98,7 @@ output application/java
 }]]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
-					<salesforce:create type="FinanceTransaction" doc:id="650a07c5-146e-43fc-991f-84966e6bf612" config-ref="Salesforce_Config" doc:name="Create Financial Transaction for Credit Note Line" target="createFinTranCreditNoteLineOutputPayload"/>
+					<salesforce:create type="FinanceTransaction" doc:id="650a07c5-146e-43fc-991f-84966e6bf612" config-ref="Salesforce_Config" doc:name="Create Finance Transaction for Credit Note Line" target="createFinTranCreditNoteLineOutputPayload"/>
 					<logger level="INFO" doc:name="Log success or fail" doc:id="518ca7c3-bd69-46b1-b118-786d87a74491" message='#[if (vars.createFinTranCreditNoteLineOutputPayload.successful == true) "Successfully added Credit Note Line Financial Transaction Record" else "Error adding Financial Transaction Record"]' />
 					<choice doc:name="Create Credit Line Tax if Tax &gt; 0" doc:id="12ab831d-a42b-46f5-a251-07f2f0a1a09f" >
 						<when expression="#[vars.creditNoteLineInfo.blng__TaxAmount__c &gt; 0]">
@@ -131,7 +131,7 @@ output application/java
 }]]]></ee:set-payload>
 								</ee:message>
 							</ee:transform>
-							<salesforce:create type="FinanceTransaction" doc:name="Create Financial Transaction for Credit Note Tax" doc:id="5cc62b69-742a-459b-819b-2a4dd8af47c3" config-ref="Salesforce_Config" />
+							<salesforce:create type="FinanceTransaction" doc:name="Create Finance Transaction for Credit Note Tax" doc:id="5cc62b69-742a-459b-819b-2a4dd8af47c3" config-ref="Salesforce_Config" />
 							<logger level="INFO" doc:name="Log success or fail" doc:id="03c5c338-9457-452e-9db2-8dc9c0e47da1" message='#[if (payload.successful == true) "Successfully added Credit Note Tax Financial Transaction Record" else "Error adding Financial Transaction Record"]' />
 						</when>
 					</choice>
