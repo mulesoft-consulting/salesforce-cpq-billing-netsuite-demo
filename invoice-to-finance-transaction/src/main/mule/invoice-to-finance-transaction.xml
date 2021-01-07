@@ -137,7 +137,5 @@ output application/java
 				</foreach>
 			</when>
 		</choice>
-		<set-variable value="" doc:name="Invoice Line Query Results" doc:id="32b891fd-5043-49cb-869d-fc61a278a042" variableName=" invoiceLineQueryResults" />
-		<logger level="INFO" doc:name="Logger" doc:id="a09afa73-dd74-4790-8b83-a5c4199d4298" message="Got to here " />
 	</flow>
 </mule>
