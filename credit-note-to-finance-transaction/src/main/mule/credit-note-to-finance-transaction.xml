@@ -115,7 +115,6 @@ output application/java
 	EventAction: "Issue a standalone credit",
 	EventType: "Posted",
 	TaxAmount: vars.creditNoteLineInfo.blng__TaxAmount__c,
-	TotalAmountWithTax: vars.creditNoteLineInfo.blng__TotalAmount__c,
 	TransactionDate: now() as DateTime {
 		format: "yyyy-MM-dd'T'hh:mm:ss.000'Z'"
 	},
@@ -127,7 +126,7 @@ output application/java
 	BaseCurrencyIsoCode: vars.creditNoteLineInfo.blng__BaseCurrency__c,
 	ImpactAmount: vars.creditNoteLineInfo.blng__TaxAmount__c,
 	LegalEntityId: vars.creditNoteLineInfo.blng__LegalEntity__c,
-	ParentReferenceEntityId: vars.createFinTranCreditNoteLineOutputPayload.id
+	ParentReferenceEntityId: vars.creditNotePayload.Id
 }]]]></ee:set-payload>
 								</ee:message>
 							</ee:transform>
