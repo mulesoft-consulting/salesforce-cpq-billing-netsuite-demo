@@ -116,11 +116,11 @@ Next, you will need to update your **config-secure.yaml** file with encrypted va
 
 ![Step 14](images/14-find-key.jpg)
 
-In a web browser, navigate to our [secure properties tool](https://secure-properties-api.us-e1.cloudhub.io/) as pictured below and enter your encryption key **Value** (here **mulesoft_password**). Enter your username (here **your_username** as an example) and click **Generate** to encrypt your username. Find the encrypted value below and save it for later. Repeat this process to encrypt your password.
+In a web browser, navigate to our [secure properties tool](https://secure-properties-api.us-e1.cloudhub.io/) as pictured below and enter your encryption key **Value** (here **mulesoft_password**). Enter your username (here **your_username** as an example) and click **Generate** to encrypt your username. Use the algorithm "Blowfish".  Find the encrypted value below and save it for later. Repeat this process to encrypt your password.
 
 ![Step 15](images/15-encrypted-username.jpg)
 
-![Step 16](images/15-encrypted-password.jpg)
+![Step 16](images/16-encrypted-password.jpg)
 
 Once you have the encrypted username and password, paste these values into the **config-secure.yaml** in the **user** and **password** fields. 
 
