@@ -45,6 +45,8 @@ This project will be triggered whenever a new FinanceTransaction record of refer
 The products corresponding to the credit note lines need to be available available in the NetSuite product catalog (Inventory Items as they are called in NetSuite). Otherwise, the Credit Memo creation will fail.
 The account related to the Credit Note needs to be present in NetSuite for successful Credit Memo creation.
 
+# Steps to configure these projects for your own environment:
+
 ## Prerequisites 
 - Salesforce instance 
 - Netsuite instance 
