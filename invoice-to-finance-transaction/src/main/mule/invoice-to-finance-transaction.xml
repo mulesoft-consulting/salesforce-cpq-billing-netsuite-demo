@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="2d223b3b-1595-4e7c-9bac-e706ddde8900" >
 		<salesforce:basic-connection username="${secure::sfdc.user}" password="${secure::sfdc.password}" url="${sfdc.auth_url}">
 			<reconnection >
@@ -26,8 +27,11 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
 		<set-variable value="#[payload]" doc:name="Save Invoice" doc:id="64784f97-ac63-417d-b184-f714db7c15e9" variableName="invoicePayload" />
+		<os:retrieve doc:name="Retrieve Previous Invoice State" doc:id="8283381d-a6f0-4b54-ab40-9d40ace1a69f" key="#[vars.invoicePayload.Id]" target="previousInvoiceState">
+			<os:default-value ><![CDATA[0]]></os:default-value>
+		</os:retrieve>
 		<choice doc:name="Choice" doc:id="db5a4957-d29c-4125-ab9c-4eea67ffbb0a" >
-			<when expression="#[vars.invoicePayload.blng__InvoiceStatus__c == 'Posted']" >
+			<when expression="#[(vars.invoicePayload.blng__InvoiceStatus__c == 'Posted') and (vars.previousInvoiceState != 'Posted')]" >
 				<ee:transform doc:name="Prep payload to Create Finance Transaction from Invoice" doc:id="e19009bf-25b7-4276-ab6f-b87d9c9d6c57" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -134,7 +138,15 @@ output application/java
 						</when>
 					</choice>
 				</foreach>
+				<os:store doc:name="Store Invoice State" doc:id="6b931b39-d8e3-48b2-81f7-d8de8ab99138" key="#[vars.invoicePayload.Id]" failOnNullValue="false" >
+					<os:value ><![CDATA[#[vars.invoicePayload.blng__InvoiceStatus__c]]]></os:value>
+				</os:store>
 			</when>
+			<otherwise >
+				<os:store doc:name="Store Invoice State" doc:id="52816873-eb00-4187-ba18-564cf5c51f79" key="#[vars.invoicePayload.Id]" failOnNullValue="false">
+					<os:value ><![CDATA[#[vars.invoicePayload.blng__InvoiceStatus__c]]]></os:value>
+				</os:store>
+			</otherwise>
 		</choice>
 	</flow>
 </mule>
