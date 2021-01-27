@@ -25,10 +25,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e1672828-170d-4583-99a9-ba984fde9623" file="config/config-secure.yaml" key="${encryption.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
-	<global-property doc:name="Global Property" doc:id="906ab8c7-3aaf-4995-bf60-72b9404625b4" name="encryption.key" value="mulesoft_password" />
-	<netsuite:rest-config name="NetSuite_Rest_config" doc:name="NetSuite Rest config" doc:id="9629156f-a832-476e-aec3-acc014556579" >
-		<netsuite:restlet-login-connection email="${secure::ns.user}" password="${secure::ns.pass}" account="${secure::ns.account}" roleId="${secure::ns.roleId}" applicationId="${secure::ns.applicationId}"/>
-	</netsuite:rest-config>
+	<global-property doc:name="Global Property" doc:id="906ab8c7-3aaf-4995-bf60-72b9404625b4" name="encryption.key" value="&lt;&lt;INSERT ENCRYPTION KEY HERE... ie: mulesoft_key&gt;&gt;" />
 	<flow name="financial-logging-to-NetSuite-Invoice-REST-Flow" doc:id="67786e83-c53c-4257-8dab-61ae49a27983" >
 		<http:listener doc:name="/syncFinTranCreditMemo" doc:id="392db5b6-a4a9-4111-b6a2-34c7f110be2a" config-ref="HTTP_Listener_config" path="/syncFinTranCreditMemo"/>
 		<ee:transform doc:name="Get query-param fin_tran_id" doc:id="4b6e38d6-56a1-4011-aa25-f7d581adea5c" >
