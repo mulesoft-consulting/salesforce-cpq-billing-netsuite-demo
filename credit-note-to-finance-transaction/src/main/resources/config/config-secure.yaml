@@ -1,7 +1,7 @@
 # Secure Properties File
 #
   
-# Salesforce properties - 228 GA version sandbox:
+# Salesforce properties:
 sfdc:
   user: "![INSERT ENCRYPTED USERNAME HERE: ie: d5HIVDGMXBLihFkkLN0dPXoJi5RKdhCDl2pqTMBL/8kolqvk6B4ZBw]"
   password: "![INSERT ENCRYPTED USERNAME HERE: ie: +QY0A0BpGB14KeFKpq8z1A]"
