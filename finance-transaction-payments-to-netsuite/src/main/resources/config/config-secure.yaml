@@ -1,14 +1,14 @@
 # Secure Properties File
 #
-# NetSuite properties for the demo5 user:
+# NetSuite properties:
 ns:
-  account: "![uc7rDe+qWXL9WTWI7s7UZQ==]"
-  user: "![Jf1gJX/W5ztX4LVRIjQXKbsggI30ckH0Ml0kWn+sfdpY9yVJRlKzYg==]"
-  pass: "![xBAiAbZhSCoTUohzkb5QPw==]"
-  applicationId: "![5caWhKEg5KJ8P1NB8C/mjJLQPgoMwEj6y75wEDBMfOe+Ve1cyp5CYA==]"
-  roleId: "![k8EFiouhuU0=]"
+  account: "![INSERT ENCRYPTED NETSUITE ACCOUNT HERE... ie: uc7rDe+qWXL9WTWI7s7UZQ]"
+  user: "![INSERT ENCRYPTED NETSUITE USER HERE... ie: Jf1gJX/W5ztX4LVRIjQXKbsggI30ckH0Ml0kWn+sfdpY9yVJRlKzYg]"
+  pass: "![INSERT ENCRYPTED NETSUITE PASSWORD HERE... ie: xBAiAbZhSCoTUohzkb5QPw]"
+  applicationId: "![INSERT ENCRYPTED NETSUITE APPLICATION_ID HERE... ie: 5caWhKEg5KJ8P1NB8C/mjJLQPgoMwEj6y75wEDBMfOe+Ve1cyp5CYA]"
+  roleId: "![INSERT ENCRYPTED NETSUITE ACCOUNT HERE... ie: k8EFiouhuU0>>]"
   
-# Salesforce properties - 228 GA version sandbox:
+# Salesforce properties:
 sfdc:
-  user: "![d5HIVDGMXBLihFkkLN0dPXoJi5RKdhCDl2pqTMBL/8kolqvk6B4ZBw==]"
-  password: "![U8KM0WZEG3vz2Thm48oPQQ==]"
+  user: "![INSERT ENCRYPTED SALESFORCE USER HERE... ie: d5HIVDGMXBLihFkkLN0dPXoJi5RKdhCDl2pqTMBL/8kolqvk6B4ZBw]"
+  password: "![INSERT ENCRYPTED SALESFORCE PASSWORD HERE... ie: U8KM0WZEG3vz2Thm48oPQQ]"
