@@ -126,8 +126,6 @@ Once you have the encrypted username and password, paste these values into the *
 
 ![Step 17](images/17-secure-config.jpg)
 
-![Step 18](images/18-secure-config.jpg)
-
 Now you are ready to deploy this project. 
 
 Repeat this process for each project you wish to use. 
