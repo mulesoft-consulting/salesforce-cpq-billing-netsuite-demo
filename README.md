@@ -49,8 +49,10 @@ The account related to the Credit Note needs to be present in NetSuite for succe
 
 ## Prerequisites 
 - Salesforce instance 
-- Netsuite instance 
+- NetSuite instance 
 - Anypoint Studio version 7.7
+- Anypoint Studio version 7.7 with an Anypoint Platform account
+- Working knowledge of Salesforce, MuleSoft, and NetSuite
 
 
 ## Step 1: Download Salesforce CPQ and Billing to NetSuite Demo artifacts from GitHub
@@ -99,7 +101,7 @@ Click **Finish** to import the project into the workspace. If successful, you wi
 
 Do these steps for each project folder that was in the zipfile.
 
-## Step 3: Configure Salesforce and Netsuite Connectivity
+## Step 3: Configure Salesforce and NetSuite Connectivity
 Select one of the projects in your workspace. Navigate to the **config.yaml** for that project.
 
 ![Step 10](images/10-config-in-studio.jpg)
