@@ -146,6 +146,7 @@ output application/java
 				<os:store doc:name="Store Invoice State" doc:id="52816873-eb00-4187-ba18-564cf5c51f79" key="#[vars.invoicePayload.Id]" failOnNullValue="false">
 					<os:value ><![CDATA[#[vars.invoicePayload.blng__InvoiceStatus__c]]]></os:value>
 				</os:store>
+				<logger level="INFO" doc:name="Log Status Value" doc:id="b9152eef-c2a6-4684-8211-34b1a6f7d671" message='#["Stored status value = " ++ vars.invoicePayload.blng__InvoiceStatus__c ++ " for Invoice Id: " ++ vars.invoicePayload.Id]'/>
 			</otherwise>
 		</choice>
 	</flow>
