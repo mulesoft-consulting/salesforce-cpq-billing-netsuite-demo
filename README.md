@@ -96,4 +96,35 @@ Click **Finish** to import the project into the workspace. If successful, you wi
 ![Step 9](images/09-project-in-studio.jpg)
 
 ## Step 3: Configure Salesforce and Netsuite Connectivity
+Select one of the projects in your workspace. Navigate to the **config.yaml** for that project.
+
+![Step 10](images/10-config-in-studio.jpg)
+
+The **config.yaml** will serve as your non-secure properties file for this project. Update this file with your desired polling interval in milliseconds (**polling_interval**) and your Salesforce authorization URL (**auth_url**) as shown.   
+
+![Step 11](images/11-config-values.jpg)
+
+Next, you will need to update your **config-secure.yaml** file with encrypted values. In order to do this, navigate to the **Global Elements** tab and select **Global Property (Configuration)** as pictured below. Find the encryption key **Value** (here **mulesoft_password**).
+
+![Step 12](images/12-global-elements.jpg)
+
+![Step 13](images/13-select-global-config.jpg)
+
+![Step 14](images/14-find-key.jpg)
+
+In a web browser, navigate to our [secure properties tool](https://secure-properties-api.us-e1.cloudhub.io/) as pictured below and enter your encryption key **Value** (here **mulesoft_password**). Enter your username (here **your_username** as an example) and click **Generate** to encrypt your username. Find the encrypted value below and save it for later. Repeat this process to encrypt your password.
+
+![Step 15](images/15-encrypted-username.jpg)
+
+![Step 16](images/15-encrypted-password.jpg)
+
+Once you have the encrypted username and password, paste these values into the **config-secure.yaml** in the **user** and **password** fields. 
+
+![Step 17](images/17-config-secure.jpg)
+
+![Step 18](images/18-secure-config.jpg)
+
+Now you are ready to deploy this project. 
+
+Repeat this process for each project you wish to use. 
 
