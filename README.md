@@ -97,7 +97,7 @@ Click **Finish** to import the project into the workspace. If successful, you wi
 
 ![Step 9](images/09-project-in-studio.jpg)
 
-Do these steps for each project folder that were in the zipfile.
+Do these steps for each project folder that was in the zipfile.
 
 ## Step 3: Configure Salesforce and Netsuite Connectivity
 Select one of the projects in your workspace. Navigate to the **config.yaml** for that project.
