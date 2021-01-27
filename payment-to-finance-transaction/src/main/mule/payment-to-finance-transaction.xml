@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 			</reconnection>
 		</salesforce:basic-connection>
 	</salesforce:sfdc-config>
-	<global-property doc:name="Global Property" doc:id="ad80ce27-fe15-4fda-8f1d-dd945a2cfaa2" name="encryption.key" value="mulesoft_password" />
+	<global-property doc:name="Global Property" doc:id="ad80ce27-fe15-4fda-8f1d-dd945a2cfaa2" name="encryption.key" value="INSERT ENCRYPTION KEY HERE:  ie: mulesoft_key" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="6fb9037c-9850-4524-a10d-c5ddbe896d48" file="config/config-secure.yaml" key="${encryption.key}">
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
