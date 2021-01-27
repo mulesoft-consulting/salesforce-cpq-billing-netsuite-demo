@@ -124,7 +124,7 @@ In a web browser, navigate to our [secure properties tool](https://secure-proper
 
 Once you have the encrypted username and password, paste these values into the **config-secure.yaml** in the **user** and **password** fields. 
 
-![Step 17](images/17-config-secure.jpg)
+![Step 17](images/17-secure-config.jpg)
 
 ![Step 18](images/18-secure-config.jpg)
 
