@@ -108,7 +108,7 @@ The **config.yaml** will serve as your non-secure properties file for this proje
 
 ![Step 11](images/11-config-values.jpg)
 
-Next, you will need to update your **config-secure.yaml** file with encrypted values. In order to do this, navigate to the **Global Elements** tab and select **Global Property (Configuration)** as pictured below. Find the encryption key **Value** (here **mulesoft_password**).
+Next, you will need to update your **config-secure.yaml** file with encrypted values. In order to do this, navigate to the **Global Elements** tab and select **Global Property (Configuration)** as pictured below. Find the encryption key **Value** (here **<<INSERT ENCRYPTION KEY HERE... ie: mulesoft_key>>**).
 
 ![Step 12](images/12-global-elements.jpg)
 
