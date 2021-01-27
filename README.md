@@ -45,3 +45,55 @@ This project will be triggered whenever a new FinanceTransaction record of refer
 The products corresponding to the credit note lines need to be available available in the NetSuite product catalog (Inventory Items as they are called in NetSuite). Otherwise, the Credit Memo creation will fail.
 The account related to the Credit Note needs to be present in NetSuite for successful Credit Memo creation.
 
+## Prerequisites 
+- Salesforce instance 
+- Netsuite instance 
+- Anypoint Studio version 7.7
+
+
+## Step 1: Download Salesforce CPQ and Billing to NetSuite Demo artifacts from GitHub
+Navigate to the the **salesforce-cpq-billing-netsuite-demo** GitHub repository. Click on the Code buttton to clone the repo or download a zip file of the code. 
+
+![Step 1](images/01-download-zip.jpg)
+
+## Step 2: Configure your Project Workspace in Anypoint Studio
+Once you have the code downloaded to your local machine, launch Anypoint Studio. 
+
+![Step 2](images/02-launch-studio.jpg)
+
+
+It is a best practice to create a new workspace for each project. Therefore, when asked to select a workspace, click Browse and navigate to the directory that you wish to contain the unzipped **salesforce-cpq-billing-netsuite-demo** code.
+
+
+Select your new workspace to launch Anypoint Studio. Once you have selected your workspace, click **launch** to launch the workspace.
+
+![Step 3](images/03-select-workspace.jpg)
+
+In Anypoint Studio, right-click in the Package Explorer to launch the menu. Select Import. 
+
+![Step 4](images/04-import-project.jpg)
+
+In the menu, select Anypoint Studio > Anypoint Studio Project from File System
+
+![Step 5](images/05-import-from-filesystem.jpg)
+
+Click the **Next** button to continue.
+
+![Step 6](images/06-browse-for-directory.jpg)
+
+Select your Project Root directory using the three dots. 
+
+Inside the directory, click on one of the project folders and click **Open**. 
+
+![Step 7](images/07-open-project-directory.jpg)
+
+Deselect the check box next to **Copy Project into Workspace**. 
+
+![Step 8](images/08-copy-project-to-workspace.jpg)
+
+Click **Finish** to import the project into the workspace. If successful, you will see the project on the lefthand side of Anypoint Studio as pictured below:
+
+![Step 9](images/09-project-in-studio.jpg)
+
+## Step 3: Configure Salesforce and Netsuite Connectivity
+
