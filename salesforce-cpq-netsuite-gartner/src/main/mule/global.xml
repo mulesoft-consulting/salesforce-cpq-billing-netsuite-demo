@@ -22,5 +22,5 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="372310e5-d5db-4778-9973-0bec9cf765ad" file="config/config-secure.yaml" key="${encryption.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
-	<global-property doc:name="Global Property" doc:id="0726c101-458a-4355-8b5b-4352ccadd16f" name="encryption.key" value="mulesoft_password" />
+	<global-property doc:name="Global Property" doc:id="0726c101-458a-4355-8b5b-4352ccadd16f" name="encryption.key" value="INSERT ENCRYPTION KEY HERE... ie: mulesoft_key" />
 </mule>

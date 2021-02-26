@@ -1,14 +1,14 @@
 # Secure Properties File
-#
+# 
 # NetSuite properties:
 ns:
-  user: "![lxWjplAmlchvNUfsF8ckkhb89pt0Xi8QO1tn14oTJEp+qg/FC+NbBw==]"
-  pass: "![SO1TkXFpCbB0sSdu1RC+8cAWACEyP66T]"
-  account: "![uc7rDe+qWXL9WTWI7s7UZQ==]"
-  roleId: "![tyjtYvZSIAA=]"
-  applicationId: "![CW+ImiiD4lZgYjOsXABkBeWbkAKdouiH4q+/u6+kN4+1uH3qRMt9bA==]"
+  account: "![INSERT ENCRYPTED NETSUITE ACCOUNT HERE... ie: uc7rDe+qWXL9WTWI7s7UZQ]"
+  user: "![INSERT ENCRYPTED NETSUITE USER HERE... ie: Jf1gJX/W5ztX4LVRIjQXKbsggI30ckH0Ml0kWn+sfdpY9yVJRlKzYg]"
+  pass: "![INSERT ENCRYPTED NETSUITE PASSWORD HERE... ie: xBAiAbZhSCoTUohzkb5QPw]"
+  applicationId: "![INSERT ENCRYPTED NETSUITE APPLICATION_ID HERE... ie: 5caWhKEg5KJ8P1NB8C/mjJLQPgoMwEj6y75wEDBMfOe+Ve1cyp5CYA]"
+  roleId: "![INSERT ENCRYPTED NETSUITE ACCOUNT HERE... ie: k8EFiouhuU0>>]"
   
 # Salesforce properties:
 cpq:
-  user: "![Yyo5CVTp8ZsdVSplgqSbTSpUDlK/poOedQRVJ0SKC5o=]"
-  pass: "![WyPe9gJoiax2BPjmR2b6wjxfLmvT8OfV]"
+  user: "![INSERT ENCRYPTED SALESFORCE USER HERE... ie: d5HIVDGMXBLihFkkLN0dPXoJi5RKdhCDl2pqTMBL/8kolqvk6B4ZBw]"
+  pass: "![INSERT ENCRYPTED SALESFORCE PASSWORD HERE... ie: U8KM0WZEG3vz2Thm48oPQQ]"
