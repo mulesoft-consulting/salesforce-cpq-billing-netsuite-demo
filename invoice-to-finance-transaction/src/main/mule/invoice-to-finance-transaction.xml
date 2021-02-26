@@ -18,7 +18,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="d62bdadb-0ab0-4be3-9063-d5a729184e72" file="config/config-secure.yaml" key="${encryption.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
-	<global-property doc:name="Global Property" doc:id="6734182e-3bab-4cdf-a6ae-611647257ee8" name="encryption.key" value="mulesoft_password" />
+	<global-property doc:name="Global Property" doc:id="6734182e-3bab-4cdf-a6ae-611647257ee8" name="encryption.key" value="INSERT ENCRYPTION KEY HERE... ie: mulesoft_key" />
 	<configuration-properties doc:name="Configuration properties" doc:id="14467cac-7bca-4a02-8d70-38ff2ecf5750" file="config/config.yaml" />
 	<flow name="invoiceToFinanceTransaction" doc:id="d9a9f112-2a91-4930-a09f-c84b4761301c" >
 		<salesforce:modified-object-listener objectType="blng__Invoice__c" doc:id="87534ada-9005-4dfe-bdc3-76a759ca38f9" config-ref="Salesforce_Config" doc:name="On Modified Object" >
